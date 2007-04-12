@@ -1,0 +1,302 @@
+/* ----- Maui table ----- */
+
+table.lapmauitable #tdCaption {
+        font-weight:bold;
+        text-align:center;
+        background: rgb(123, 154, 192);
+        vertical-align: top;
+        color:white;
+}
+
+table.lapmauitable {
+        border-collapse: collapse;
+        border:1px solid #000000;
+        /*width:80%;*/
+        position:relative;
+        margin:auto;
+		font-size:8pt;
+}
+
+table.lapmauitable tbody {
+        background:white;
+        color:black;
+}
+
+table.lapmauitable thead {
+        background:blue;
+        color:white;
+        font-weight:bold;
+}
+
+table.lapmauitable #cellNodeName {
+	background:  rgb(123, 154, 192);
+	color:white;
+	border:1px dotted rgb(100,123,172);
+	text-align:center;
+}
+
+table.lapmauitable #cellEmpty1			{ background: rgb(198, 207, 217); border:1px dotted #7B9AC0; }
+table.lapmauitable #cellEmpty2			{ background: #aec2d9; border:1px dotted #7B9AC0; }
+table.lapmauitable #cellDate			{ background: #82ABD9;	border:1px dotted #7B9AC0; }
+table.lapmauitable #cellJobRunning		{ background: rgb(0, 218, 0); }
+table.lapmauitable #cellJob				{ background: rgb(0, 118, 0); }
+table.lapmauitable #cellUserRunning		{ background: rgb(218, 0, 0); }
+table.lapmauitable #cellUser   			{ background: rgb(118, 0, 0); }
+table.lapmauitable #cellHighlighted		{ background: rgb(100, 100, 255); }
+
+table.lapmauitable tfoot {
+        background:red;
+}
+
+table.lapmauitable td    {
+        border: 0px solid #7B9AC0;
+        vertical-align:top;
+		width:3em;
+}
+
+/* ----- Cluster status table ----- */
+
+table.lapclustertable #tdCaption {
+        font-weight:bold;
+        text-align:center;
+        background: rgb(123, 154, 192);
+        vertical-align: top;
+        color:white;
+}
+
+table.lapclustertable {
+        border-collapse: collapse;
+        border:1px solid #000000;
+        width:50%;
+        position:relative;
+        margin:auto;
+		font-size:10pt;
+}
+
+table.lapclustertable tbody {
+        background:rgb(198, 207, 217);
+	border:1px dotted rgb(123, 154, 192);
+        color:black;
+}
+
+table.lapclustertable thead {
+        background:rgb(123, 154, 192);
+        color:white;
+        font-weight:bold;
+}
+
+table.lapclustertable #cellClusterName { background: rgb(0, 70, 162); font-weight:bold; color:white; }
+
+
+table.lapclustertable #cellpercent10  { background:  rgb(0, 0, 112); font-weight:bold; color:white; text-align:center; }
+table.lapclustertable #cellpercent20  { background:  rgb(0, 32, 192); font-weight:bold; color:white; text-align:center; }
+table.lapclustertable #cellpercent30  { background:  rgb(0, 100, 112); font-weight:bold; color:white; text-align:center; }
+table.lapclustertable #cellpercent40  { background:  rgb(0, 128, 76); font-weight:bold; color:white; text-align:center; }
+table.lapclustertable #cellpercent50  { background:  rgb(0, 152, 52); font-weight:bold; color:white; text-align:center; }
+table.lapclustertable #cellpercent60  { background:  rgb(172, 152, 0); font-weight:bold; text-align:center; }
+table.lapclustertable #cellpercent70  { background:  rgb(255, 176, 0); font-weight:bold; text-align:center; }
+table.lapclustertable #cellpercent80  { background:  rgb(255, 128, 0); font-weight:bold; text-align:center; }
+table.lapclustertable #cellpercent90  { background:  rgb(255, 76, 0); font-weight:bold; text-align:center; }
+table.lapclustertable #cellpercent100 { background:  rgb(255, 0, 0); font-weight:bold; text-align:center; }
+
+/* ----- Cluster status table ----- */
+
+table.lapqueuetable #tdCaption {
+        font-weight:bold;
+        text-align:center;
+        background: rgb(123, 154, 192);
+        vertical-align: top;
+        color:white;
+}
+
+table.lapqueuetable {
+        border-collapse: collapse;
+        border:1px solid #000000;
+        width:50%;
+        position:relative;
+        margin:auto;
+		font-size:10pt;
+}
+
+table.lapqueuetable tbody {
+        background:rgb(198, 207, 217);
+        color:black;
+	text-align:center;
+}
+
+table.lapqueuetable thead {
+        background:rgb(123, 154, 192);
+	border-style:1px solid rgb(0, 0, 0);
+        color:white;
+        font-weight:bold;
+	text-align:center;
+}
+
+table.lapqueuetable #cellDefault  { border-width: 1px; border-style: dotted; border-color: black; }
+table.lapqueuetable #cellRunning  { border-width: 1px; border-style: dotted; border-color: black; background:  rgb(0, 200, 0); font-weight:bold; color:black; text-align:center; }
+table.lapqueuetable #cellIdle  	  { border-width: 1px; border-style: dotted; border-color: black;background:  rgb(200, 200, 0); font-weight:bold; color:black; text-align:center; }
+table.lapqueuetable #cellBlocked  { border-width: 1px; border-style: dotted; border-color: black;background:  rgb(200, 0, 0); font-weight:bold; color:white; text-align:center; }
+
+/*
+#formWindow {
+	position:relative;
+	padding-top:0px;
+	padding-bottom:0px;
+	background-color:#DAE3ED;
+	border:1px solid #7B9AC0;
+	left:20%;
+	width:60%;
+	top:50px;
+}
+
+#formViewWindow {
+	position:relative;
+	padding-top:0px;
+	padding-bottom:0px;
+	background-color:#DAE3ED;
+	border:1px solid #7B9AC0;
+	left:20%;
+	width:60%;
+	height:400px;
+	top:20px;
+}
+
+#formViewContent {
+	margin-top:0;
+	position:relative;
+	background-color:#DAE3ED;
+	border:1px solid #7B9AC0;
+	width:100%;
+	height:100%;
+	overflow:scroll;
+}
+
+#formCaption {
+	text-align:center;
+	font-weight:bold;
+	padding-top:0.3em;
+	padding-bottom:0.3em;
+	background-color:#7B9AC0;
+	color:#FFFFFF;
+}
+
+#formContent {
+	margin-top:0.6em;
+	background-color:#DAE3ED;
+}
+
+*/
+
+/* ----- Table form ----- */
+
+/*
+
+table.lapform { 
+	font-family: Tahoma, Helvetica, Geneva, Arial, SunSans-Regular, sans-serif;
+	font-size:10pt;
+	border-collapse: collapse;
+	width:100%;
+}
+
+table.lapform tbody {
+	color:black;
+}
+
+table.lapform thead {
+	background:black;
+	font-weight:bold;
+	text-align:center;
+	background-color: rgb(123, 154, 192); 
+	vertical-align: top;
+}
+
+table.lapform #tdControl    { 
+	vertical-align:center;
+	text-align:left;
+	width:50%;
+}
+
+table.lapform #tdCaption    { 
+	vertical-align:center;
+	text-align:right;
+	width:50%;
+}
+
+table.lapform #cellStyle1   { 
+	background: rgb(198, 207, 217);
+}
+
+table.lapform #cellStyle2   { 
+	background: rgb(218, 227, 237);
+}
+
+table.lapform #tdControl    { 
+	vertical-align:center;
+	text-align:left;
+	width:50%;
+}
+
+*/
+/* ----- Dialog settings ----- */
+
+/*
+
+#messageBoxWindow {
+	position:relative;
+	background-color:#DAE3ED;
+	border:1px solid #7B9AC0;
+	margin:auto;
+	width:auto;
+	max-width:40%;
+	top:50px;
+	text-align:center;
+}
+
+#messageBoxCaption {
+	vertical-align:center;
+	text-align:center;
+	font-weight:bold;
+	padding-top:0.1em;
+	padding-bottom:0.1em;
+	background-color:#7B9AC0;
+	color:#FFFFFF;
+}
+
+#messageBoxContent {
+	text-align:center;
+	margin-top:0.2em;
+	margin-left:0.2em;
+	margin-right:0.2em;
+	margin-bottom:0.2em;
+	background-color:#DAE3ED;
+}
+
+#messageBoxButtons {
+	vertical-align:middle;
+	text-align:center;
+	margin-top:0.0em;
+	margin-left:0.0em;
+	margin-right:0.0em;
+	margin-bottom:0.0em;
+	background-color:#DAE3ED;
+	height:1em;
+}
+
+#messageBoxContentTable {
+	width:100%;
+	word-wrap:break-word;
+	text-align:center;
+}
+
+#messageBoxTDText {
+	vertical-align:middle;
+	height:60px;
+}
+
+#messageBoxTDButtons {
+	vertical-align:middle;
+	text-align:center;
+	border:1px solid;
+	height:10px;
+}
+*/

@@ -1,0 +1,9 @@
+rm -f context/*.pyc
+rm -f context/Web/*.pyc
+rm -f context/Lap/*.pyc
+rm -f context/Grid/*.pyc
+rm -f context/Plugins/AbaqusMultiple/*.pyc
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/nordugrid/lib:/opt/nordugrid/lib/python2.3/site-packages
+
+./AppServer

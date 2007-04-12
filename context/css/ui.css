@@ -1,0 +1,141 @@
+/* ----- LAP Window settings ----- */
+
+/* Show only to IE PC \*/
+* html .boxhead h2 {height: 1%;} /* For IE 5 PC */
+
+.lapWindow {
+	/*margin: 0 auto; /* center for now */*/
+	/* ems so it will grow */
+	width: 20em;
+	background: url(/lap/context/images/lunarc-sbbody-r.gif) no-repeat bottom right;
+	font-size: 100%;
+	margin-left: auto;
+    margin-right: auto;	
+}
+.lapWindowHead {
+	background: url(/lap/context/images/lunarc-sbhead-r.gif) no-repeat top right;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+}
+.lapWindowHead h2 {
+	background: url(/lap/context/images/lunarc-sbhead-l.gif) no-repeat top left;
+	margin: 0;
+	padding: 4px 30px 5px;
+	color: white; 
+	font-weight: bold; 
+	font-size: 1em; 
+	line-height: 1em;
+	text-shadow: rgba(0,0,0,.4) 0px 2px 5px; /* Safari-only, but cool */
+}
+.lapWindowBody {
+	background: url(/lap/context/images/lunarc-sbbody-l.gif) no-repeat bottom left;
+	margin: 0;
+	padding: 0.5em 1.5em 1.5em 1em;
+	font-size:100%;
+}
+
+/* ----- Form user interface control settings ----- */
+
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+form {
+  padding: 0px;
+  font-size: 100%;
+  font-family: tahoma;
+  font-size: 80%;
+}
+
+form fieldset {
+  /*width: auto;*/
+  font-size: 100%;
+  padding: 0.5em 0.5em 0.5em 0.5em;
+  margin: 0.5em 0.5em 0.5em 0.5em;
+  border:1px solid;
+  display: block;
+}
+
+form fieldset legend {
+  color: #000000;
+  padding: 0em 0.4em;
+  font-weight: bold;
+}
+
+label {
+  font-size: 100%;
+  width: 8em;
+  float: left;
+  text-align: right;
+  margin: 0 1em 0 0;
+  clear: both
+}
+
+label u {
+  font-style: normal;
+  text-decoration: underline;
+}
+
+input, select, textarea {
+  font-family: Tahoma, Arial, sans-serif;
+  font-size: 100%;
+  color: #000000;
+  margin-bottom: 0.5em;
+}
+
+textarea {
+  overflow: auto;
+}
+
+/* ----- Table form ----- */
+
+.lapFormTable { 
+	border-collapse: collapse;
+	border:0px solid #7B9AC0;
+	width:100%;
+	background: #DAE3ED	
+}
+
+.lapFormTable #cellStyle1   { 
+	background: rgb(198, 207, 217);
+}
+
+.lapFormTable #cellStyle2   { 
+	background: rgb(218, 227, 237);
+}
+
+.lapFormTable #cellHeader {
+	font-weight: bold;	
+}
+
+.lapFormTable td    { 
+	/*border: 2px solid #7B9AC0;*/
+	vertical-align:top; 
+	padding: 5px 5px 1px 1px;
+}
+
+/* ----- Form help tooltips ----- */
+  
+#dhtmltooltip{
+	font-size: 80%;
+	position: absolute;
+	left: -300px;
+	width: 150px;
+	border: 1px solid black;
+	padding: 2px;
+	background-color: lightyellow;
+	visibility: hidden;
+	z-index: 100;
+	/*Remove below line to remove shadow. Below line should always appear last within this CSS*/
+	filter: progid:DXImageTransform.Microsoft.Shadow(color=gray,direction=135);
+}
+
+#dhtmlpointer{
+	position:absolute;
+	left: -300px;
+	z-index: 101;
+	visibility: hidden;
+}
+

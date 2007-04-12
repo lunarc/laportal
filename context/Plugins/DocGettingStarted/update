@@ -1,0 +1,3 @@
+rm getting_started*
+wget -nd -r -l1 --no-parent -A.html http://lindemanns.homedns.org/lap
+wget -nd -r -l1 --no-parent -A.jpg http://lindemanns.homedns.org/lap
