@@ -1,3 +1,25 @@
+#
+# VOAdminPage
+#
+# Copyright (C) 2006-2007 Jonas Lindemann
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
+
+"""VOAdminPage module"""
+
 from Web.ApplicationSecurePage import ApplicationSecurePage
 
 import Web.Dialogs
@@ -9,14 +31,23 @@ import LapSite
 import os, re
 
 class VOAdminPage(ApplicationSecurePage):
+	"""Maintains a list of DN and username mappings.
+	
+	The list of DN/username mappings are stored in a normal text
+	file, volist.txt, and is located in LapSite.Dirs["SessionDir"]
+	
+	Only the portal admin user can use this page."""
 	
 	def actions(self):
+		"""Return implemented actions."""
 		return ApplicationSecurePage.actions(self) + ["add", "remove"]	
 	
 	def title(self):
+		"""Return page title"""
 		return 'VO Administration Page'
 	
 	def writeContent(self):
+		"""Render the text HTML"""
 		
 		# Retrieve user settings
 		
@@ -64,6 +95,7 @@ class VOAdminPage(ApplicationSecurePage):
 			Web.Dialogs.messageBox(self, "You are not site administrator", title="Message")
 			
 	def add(self):
+		"""Add DN/username mapping the the VO list file."""
 		
 		# Get the session directory
 		
@@ -92,6 +124,7 @@ class VOAdminPage(ApplicationSecurePage):
 		self.writeBody()
 	
 	def remove(self):
+		"""Remove DN/username mapping from VO list file."""
 		
 		# Get the session directory
 		

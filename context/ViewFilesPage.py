@@ -1,3 +1,25 @@
+#
+# ViewFilesPage
+#
+# Copyright (C) 2006-2007 Jonas Lindemann
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
+
+"""ViewFilesPage module"""
+
 from Web.ApplicationSecurePage import ApplicationSecurePage
 from MiscUtils.Funcs import uniqueId
 
@@ -15,19 +37,33 @@ import Web
 import Web.Ui
 import Web.Dialogs
 
-jobRunningColor   = "51, 204, 0"
-jobQueuingColor   = "255, 204, 0"
-jobAcceptedColor  = "0, 204, 204"
-jobDeletedColor   = "204, 0, 0"
-jobFinishingColor = "51, 204, 0"
-jobFinishedColor  = "51, 204, 0"
-
 class ViewFilesPage(ApplicationSecurePage):
+	"""File manager page for downloaded job files.
+
+	This page uses the following properties (session values)
+	to maintain state
+	
+	mode - Current view mode [session|file|view]-
+	
+		session - Display session results.
+		file    - display files in session dirs.
+		view	- Preview/download files.
+		
+	jobname     - Name of the studied job.
+	
+	sessiondir  - Downloaded session dir for the studied job.
+	
+	dir         - Current directory. 
+	
+	dirTop		- Topmost directory.
+	"""
 	
 	def title(self):
+		"""Return page title."""
 		return 'File view'
 
 	def writeContent(self):
+		"""Render the page HTML."""
 			
 		if self.hasProperty("status"):
 
@@ -112,13 +148,6 @@ class ViewFilesPage(ApplicationSecurePage):
 			if self.request().hasValue("direntry"):
 				changeDir = self.getStringNoDoubleDot(self.request(), "direntry")
 				
-			print "jobName =", jobName
-			print "viewMode =", viewMode
-			print "sessionDir =", sessionDir
-			print "fileEntry =", fileEntry
-			print "dirEntry =", dirEntry
-
-
 			if viewMode == "view":
 				
 				if fileEntry!="":
@@ -274,7 +303,11 @@ class ViewFilesPage(ApplicationSecurePage):
 				form.render(self)
 	
 	def deleteDir(self):
-		print "deleteDir():"
+		"""Delete checked directory (action).
+		
+		Displays a verification dialog before permanently removing the
+		directory."""
+		
 		if self.request().hasValue("chkDir"):
 			self.confirm("Are you sure?", "Delete directory", "", "")
 			self.setProperty("deletedir", self.request().value("chkDir"))
@@ -284,6 +317,7 @@ class ViewFilesPage(ApplicationSecurePage):
 			self.writeBody()
 	
 	def downloadAll(self):
+		"""Download all displayed files as a tarball (action)."""
 		
 		jobName = self.getProperty("jobname")
 		currentDir = self.getProperty("dir")
@@ -301,6 +335,7 @@ class ViewFilesPage(ApplicationSecurePage):
 		self.forward("FileDownloadPage")
 
 	def goBack(self):
+		"""Goto previous directory / session (action)."""
 		
 		viewMode = self.getProperty("mode")
 		
@@ -339,11 +374,16 @@ class ViewFilesPage(ApplicationSecurePage):
 		pass
 			
 	def actions(self):
+		"""Return implemented actions."""
 		return ApplicationSecurePage.actions(self) + ["deleteDir", 
 			"downloadAll", "goBack", "deleteDirYes", "deleteDirNo",
 			"showOutput", "showErrors"]
 	
 	def deleteDirYes(self):
+		"""Really delete checked directory.
+		
+		This function is called by the verification dialog in response
+		to a yes answer."""
 
 		if self.hasProperty("deletedir"):
 			
@@ -380,14 +420,26 @@ class ViewFilesPage(ApplicationSecurePage):
 			self.writeBody()
 	
 	def deleteDirNo(self):
+		"""Cancel directory removal.
+		
+		This action is called by the No button of the
+		verification dialog."""
+		
 		if self.hasProperty("deletedir"):
 			sefl.delProperty("deletedir")
 		self.writeBody()
 		
 	def setFormStatus(self, status):
+		"""Set the form status text message.
+		
+		If not empty a message is displayed when the page is re-rendered."""
 		self.setProperty("status", status)
 		
 	def confirm(self, question, title, yesPage, noPage):
+		"""Set properties for a confirmation dialog.
+		
+		When the page is re-rendered a confirmation dialog is displayed."""
+		
 		self.setProperty("confirmMessage", question)
 		self.setProperty("confirmTitle", title)
 		self.setProperty("confirmYesPage", yesPage)

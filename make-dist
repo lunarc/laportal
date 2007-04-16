@@ -19,7 +19,7 @@ CONFIG_DIR='./LapConfig'
 ROOT_DIR='.'
 JSMENU_DIR='./context/jsmenubar'
 
-DIST_DIR='../lap-dists/'
+DIST_DIR='../lap-dist'
 
 find $PLUGIN_DIR $FIND_OPTS | grep -v '.pyc' > pluginFiles
 find $CONTEXT_DIR $FIND_OPTS | grep -v $PLUGIN_DIR | grep -v $IMAGE_DIR | grep -v $ICON_DIR | grep -v $CSS_DIR | grep -v '.pyc' | grep -v $JSMENU_DIR | grep -v $JSMENU_DIR > sourceFiles
