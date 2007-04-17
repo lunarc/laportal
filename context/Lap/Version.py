@@ -5,11 +5,11 @@ import pickle
 
 majorVersion   = 0
 minorVersion   = 8
-releaseVersion = 3
-textVersion    = "Undergoing major development... :) Have patience"
+releaseVersion = 4
+textVersion    = "Royal Scot Release"
 
 description    = "LUNARC Application Web Portal"
-copyright      = "Copyright &#169 2004-2006 LUNARC, Lund University"
+copyright      = "Copyright &#169 2004-2007 LUNARC, Lund University"
 license	       = "GNU Public License version 2 or later"
 author         = "Jonas Lindemann"
 
