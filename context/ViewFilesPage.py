@@ -39,23 +39,14 @@ import Web.Dialogs
 
 class ViewFilesPage(ApplicationSecurePage):
 	"""File manager page for downloaded job files.
-
-	This page uses the following properties (session values)
-	to maintain state
 	
-	mode - Current view mode [session|file|view]-
+	This page is designed to display downloaded session directories for
+	a specific job. The page is the called with mode=session and jobname set to
+	the job to display downloaded results for. The syntax is:
 	
-		session - Display session results.
-		file    - display files in session dirs.
-		view	- Preview/download files.
-		
-	jobname     - Name of the studied job.
+	.../ViewFilesPage?mode=session&jobname={jobname}
 	
-	sessiondir  - Downloaded session dir for the studied job.
-	
-	dir         - Current directory. 
-	
-	dirTop		- Topmost directory.
+	The page has additional request parameters, but these are only used internally.
 	"""
 	
 	def title(self):

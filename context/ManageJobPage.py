@@ -1,3 +1,25 @@
+#
+# ManageJobPage
+#
+# Copyright (C) 2006-2007 Jonas Lindemann
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
+
+"""ManageJobPage module"""
+
 from Web.ApplicationSecurePage import ApplicationSecurePage
 
 from time import *
@@ -16,9 +38,17 @@ import Web.Ui
 import Web.Dialogs
 
 class ManageJobPage(ApplicationSecurePage):
+	"""Page for managing job user job definitions.
+	
+	Job definitions are directories containing uploaded job files and configuration
+	data for job plugins. Job plugin directories are located in the user
+	portal directory.
+	"""
 
 	def writeHead(self):
-
+		"""Render page head for displaying a wait page while waiting
+		for slow operations."""
+		
 		if self.session().hasValue("managejob_metarefresh"):
 			
 			self.writeln("""<META HTTP-EQUIV="REFRESH" CONTENT="0;ManageJobPage">""")
@@ -27,6 +57,7 @@ class ManageJobPage(ApplicationSecurePage):
 		ApplicationSecurePage.writeHead(self)
 
 	def writeContent(self):
+		"""Render page HTML."""
 		
 		if self.session().hasValue("managejob_status"):
 
@@ -134,6 +165,7 @@ class ManageJobPage(ApplicationSecurePage):
 				form.render(self)
 			
 	def editJob(self):
+		"""Open the edit job page for selected job defintion (action)."""
 		
 		if self.request().hasValue("chkJob"):
 			
@@ -169,6 +201,7 @@ class ManageJobPage(ApplicationSecurePage):
 		
 		
 	def viewJobFiles(self):
+		"""Open the view files page for the selected job definition (action)."""
 		
 		print "request = ", self.request().fields()		
 
@@ -193,6 +226,7 @@ class ManageJobPage(ApplicationSecurePage):
 			self.writeBody()
 	
 	def submitJob(self):
+		"""Submit selected job(s) to the grid (action)."""
 
 		if self.request().hasValue("chkJob"):
 			
@@ -250,6 +284,11 @@ class ManageJobPage(ApplicationSecurePage):
 			self.writeBody()
 			
 	def deleteJob(self):
+		"""Initiate job definition deletion (action).
+		
+		This action will show a confirmation dialog, calling the deleteJobYes
+		action if the user confirms the dialog."""
+		
 		if self.request().hasValue("chkJob"):
 			self.confirm("Are you sure?", "Delete job", "", "")
 			self.session().setValue("managejob_deletejob", self.getString(self.request(),"chkJob"))
@@ -259,6 +298,7 @@ class ManageJobPage(ApplicationSecurePage):
 			self.writeBody()
 		
 	def deleteJobYes(self):
+		"""Delete selected job(s) defintions (action)."""
 		
 		if self.session().hasValue("managejob_deletejob"):
 			
@@ -305,14 +345,20 @@ class ManageJobPage(ApplicationSecurePage):
 			
 			
 	def deleteJobNo(self):
+		"""Cancel job delete."""
+		
 		if self.session().hasValue("managejob_deletejob"):
 			self.session().delValue("managejob_deletejob")
 		self.writeBody()
 	
 	def setFormStatus(self, status):
+		"""Set the message to display form status."""
+		
 		self.session().setValue("managejob_status", status)
 
 	def pleaseWait(self, message):
+		"""Display a please wait message, enabling metarefresh."""
+		
 		self.session().setValue("managejob_wait", message)
 		self.session().setValue("managejob_metarefresh", "")
 		self.writeHead()
@@ -321,12 +367,15 @@ class ManageJobPage(ApplicationSecurePage):
 
 		
 	def confirm(self, question, title, yesPage, noPage):
+		"""Setup confirmation dialog."""
+		
 		self.session().setValue("managejob_confirm", question)
 		self.session().setValue("managejob_confirm_title", title)
 		self.session().setValue("managejob_confirm_yes_page", yesPage)
 		self.session().setValue("managejob_confirm_no_page", noPage)
 	
 	def actions(self):
+		"""Return a list of implemented actions."""
 		return ApplicationSecurePage.actions(self) + ["submitJob",
 			 "deleteJob",
 			 "deleteJobYes",

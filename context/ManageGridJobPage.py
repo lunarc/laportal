@@ -1,3 +1,25 @@
+#
+# ManageGridJobPage
+#
+# Copyright (C) 2006-2007 Jonas Lindemann
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+#
+
+"""ManageGridJobPage module"""
+
 from Web.ApplicationSecurePage import ApplicationSecurePage
 from time import *
 
@@ -15,6 +37,10 @@ import Web.Ui
 import Web.Dialogs
 
 class ManageGridJobPage(ApplicationSecurePage):
+	"""Page for managing grid jobs.
+	
+	Displays a list of all running and non-running grid-jobs with options
+	for killing, cleaning and viewing job output."""
 	
 	def statusImage(self, status):
 		
@@ -39,7 +65,9 @@ class ManageGridJobPage(ApplicationSecurePage):
 		return "images/stat_finished.gif"
 
 	def writeHead(self):
-	
+		"""Render page head for displaying a wait page while waiting
+		for slow operations."""
+
 		if self.session().hasValue("grid_job_metarefresh"):
 			self.writeln("""<META HTTP-EQUIV="REFRESH" CONTENT="0;ManageGridJobPage">""")
 			self.session().delValue("grid_job_metarefresh")
@@ -50,6 +78,7 @@ class ManageGridJobPage(ApplicationSecurePage):
 
 
 	def writeContent(self):
+		"""Render page HTML."""
 		
 		if self.session().hasValue("grid_job_status"):
 
@@ -187,6 +216,7 @@ class ManageGridJobPage(ApplicationSecurePage):
 				form.render(self)
 			
 	def getJob(self):
+		"""Retrieve selected jobs from grid (action)."""
 		
 		if self.request().hasValue("chkJob"):
 			
@@ -262,6 +292,7 @@ class ManageGridJobPage(ApplicationSecurePage):
 		
 		
 	def killJob(self):
+		"""Kill selected running jobs (action)."""
 
 		if self.request().hasValue("chkJob"):
 			
@@ -317,6 +348,7 @@ class ManageGridJobPage(ApplicationSecurePage):
 			self.cacheJobList()
 				
 	def cleanJob(self):
+		"""Clean selected jobs."""
 
 		if self.request().hasValue("chkJob"):
 			
@@ -372,9 +404,13 @@ class ManageGridJobPage(ApplicationSecurePage):
 			self.cacheJobList()
 			
 	def setFormStatus(self, status):
+		"""Set the message to display form status."""
+
 		self.session().setValue("grid_job_status", status)
 
 	def pleaseWait(self, message):
+		"""Display a please wait message, enabling metarefresh."""
+
 		self.session().setValue("grid_job_wait", message)
 		self.session().setValue("grid_job_metarefresh", "")
 		self.writeHead()
@@ -382,9 +418,13 @@ class ManageGridJobPage(ApplicationSecurePage):
 		self.response().flush()
 		
 	def refreshList(self):
+		"""Force page refresh (action)."""
+		
 		self.writeBody()
 		
 	def showOutputWindow(self, jobId, jobName, outputType="stdout"):
+		"""Open output window."""
+		
 		self.session().setValue("viewOutput_jobId", jobId)
 		self.session().setValue("viewOutput_jobName", jobName)
 		self.session().setValue("viewOutput_type", outputType)
@@ -397,13 +437,15 @@ class ManageGridJobPage(ApplicationSecurePage):
 		self.cacheJobList()
 		
 	def cacheJobList(self):
+		"""Enable job list caching."""
 		self.session().setValue("grid_job_cacheJobList", "")
 		
 	def refreshJobList(self):
+		"""Disable job list caching update the list."""
 		self.session().delValue("grid_job_cacheJobList")
 		
-		
 	def actions(self):
+		"""Return a list of implemented actions."""
 		return ApplicationSecurePage.actions(self) + ["getJob",
 			 "killJob",
 			 "cleanJob",
