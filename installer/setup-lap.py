@@ -121,7 +121,7 @@ System = {
 		"ServerUser":"%(ServerUser)s",
 		"ServerGroup":"%(ServerGroup)s",
 		"ServerPIDFile":"%(ServerPIDFile)s",
-        "ARCInterface":"arclib"
+        "ARCInterface":""
 }
 """
 
