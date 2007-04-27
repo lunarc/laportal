@@ -963,7 +963,7 @@ class AppPortal(Package):
 		configFile.write(siteConfigTemplate % self._configParams)
 		configFile.close()
 
-	def updateInitFile(self):
+	def updateInitFile(self, rootInstall=False):
 		"""Create portal init-script.
 
 		The script is located in {Portal install dir}/init/lap"""
@@ -977,6 +977,9 @@ class AppPortal(Package):
 		# WEBKIT_DIR=/sw/lap
 		# PID_FILE=/var/run/lap.pid
 		# LOG=/var/log/lap/lap_init.log
+
+		if rootInstall and self.getOSFlavor()=="rhel":
+			initFilename = "/etc/init.d/lap"
 
 		initFile = file(initFilename, "w")
 
@@ -999,6 +1002,9 @@ class AppPortal(Package):
 			initFile.write(newLine)
 
 		initFile.close()
+
+		if rootInstall and self.getOSFlavor()=="rhel":
+			os.system("chkconfig --add lap")
 
 	def createApacheConfig(self, location = "lap", rootInstall = False):
 		"""Create apache configuration file.
