@@ -1,16 +1,14 @@
 #!/bin/sh
 #
-# Startup script for WebKit on UNIX systems.
+# Startup script for the Lunarc Application Portal
 #
-# See Webware/WebKit/Docs/InstallGuide.html for instructions.
 
 # chkconfig: 2345 75 25
 # description: LAP is a Python application server.
 
-
 # Configuration section
 
-APP_DIR=/sw/lap
+APP_DIR=/opt/lap
 PID_FILE=/var/run/lap.pid
 LOG=/var/log/lap/lap_init.log
 
@@ -39,22 +37,14 @@ fi
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$NORDUGRID_LOCATION/lib:$NORDUGRID_LOCATION/lib/python2.3/site-packages
 
-[ -x $APP_DIR/AppServer ] || exit 0
-
 case "$1" in
 	start)
 		echo -n  "Starting LAP: "
 		pushd $APP_DIR > /dev/null
-		LAUNCH='python Launch.py ThreadedAppServer'
-
-		# log separator
-		echo "----------------------------------------------------------------------" >> $LOG
+		LAUNCH='python ./Launch.py ThreadedAppServer'
 
 		# run as root:
 		$LAUNCH >> $LOG 2>&1 &
-
-		# run as a user named 'webware':
-		#su -c "$LAUNCH" webware >> $LOG 2>&1 &
 
 		echo $! > $PID_FILE
 		popd > /dev/null
