@@ -36,5 +36,5 @@ System = {
 	"ServerUser":"portaluser",
 	"ServerGroup":"lunarc",
 	"ServerPIDFile":"/var/run/lap.pid",
-	"ARCInterface":"arclib"
+	"ARCInterface":""
 }

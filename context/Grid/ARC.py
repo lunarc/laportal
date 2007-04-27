@@ -30,6 +30,8 @@ import LapSite
 
 import arclib
 
+from Lap.Log import *
+
 class Ui:
 	"""ARC middleware user interface class."""
 	_sharedState = {}
@@ -184,6 +186,8 @@ class Ui:
 			except:
 				self.unlockArclib()
 
+			print jobIds
+
 			self.unlockArclib()
 			
 			jobListFile = file(os.path.join(self._user.getDir(),".ngjobs"), "r")
@@ -289,25 +293,28 @@ class Ui:
 				
 				# Find a cluster
 			
-				print "Ui: Getting cluster info..."
+				lapInfo("Ui: Getting cluster info...")
 				url = arclib.URL("ldap://neo.lunarc.lu.se:2135/o=grid/mds-vo-name=local")
 				cluster = arclib.GetClusterInfo(url)
+				lapDebug(cluster)
 				
 				# Find queue information
 		
-				print "Ui: Getting queue info..."
+				lapInfo("Ui: Getting queue info...")
 				queueInfo = arclib.GetQueueInfo(url)
+				lapDebug(queueInfo)
 				
 				# Construct submission targets
 			
-				print "Ui: Constructing targets..."
+				lapInfo("Ui: Constructing targets...")
 				targets = arclib.ConstructTargets(queueInfo, xrslAll)
+				lapDebug(targets)
 			
 				# Submit job
 				
 				jobIds = []
 				
-				print "Ui: Submitting job..."
+				lapInfo("Ui: Submitting job...")
 				if len(targets)>0:
 					currDir = os.getcwd()
 					[jobDir, filename] = os.path.split(xrslFilename)
@@ -317,7 +324,7 @@ class Ui:
 					for xrsl in xrslSplit:
 						jobId = arclib.SubmitJob(xrsl, targets)
 						jobIds.append(jobId)
-						print "Ui:", jobId, "submitted."
+						lapInfo("Ui:"+jobId+"submitted.")
 						
 						jobName = xrsl.GetRelation("jobName").GetSingleValue()
 						
@@ -330,17 +337,22 @@ class Ui:
 					
 				
 			except arclib.XrslError, message:
-				print "Ui: XrslError:", message
+				lapError("Ui: XrslError: "+message)
 				os.chdir(currDir, force=True)
 				self.unlockArclib()
 				return -1, []
 			except arclib.JobSubmissionError, message:
-				print "Ui: JobSubmissionError:", message
+				lapError("Ui: JobSubmissionError: "+(message))
 				os.chdir(currDir, force=True)
 				self.unlockArclib()
 				return -1, []			
+			except arclib.TargetError, message:
+                                lapError("Ui: TargetError: "+str(message))
+                                os.chdir(currDir, force=True)
+                                self.unlockArclib()
+                                return -1, []
 			except:
-				print "Unexpected error:", sys.exc_info()[0]
+				lapError("Unexpected error: "+str(sys.exc_info()[0]))
 				os.chdir(currDir, force=True)
 				self.unlockArclib()
 				return -1, []

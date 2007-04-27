@@ -45,35 +45,7 @@ Launch.pidFile = pidFile
 Launch.user = user
 Launch.group = group
 
-# Setup logging
-
-logger = logging.getLogger('lap')
-hdlr = logging.FileHandler(LapSite.Logging["LogFile"])
-formatter = logging.Formatter('%(asctime)s %(levelname)s\t: %(message)s')
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-
-if LapSite.Logging.has_key("LogLevel"):
-        if LapSite.Logging["LogLevel"] == "DEBUG":
-                logger.setLevel(logging.DEBUG)
-        elif LapSite.Logging["LogLevel"] == "WARNING":
-                logger.setLevel(logging.WARNING)
-        elif LapSite.Logging["LogLevel"] == "INFO":
-                logger.setLevel(logging.INFO)
-        else:
-                logger.setLevel(logging.WARNING)
-else:
-        logger.setLevel(logging.WARNING)
-
-
 if __name__ == '__main__':
-
-        logger.info("-----------------------------------")
-        logger.info("Lunarc Application Portal starting ")
-        logger.info("-----------------------------------")
 
 	Launch.main()
 
-        logger.info("-----------------------------------")
-        logger.info("Lunarc Application Portal shutdown ")
-        logger.info("-----------------------------------")
