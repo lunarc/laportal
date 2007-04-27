@@ -88,11 +88,13 @@ case "$1" in
 		rm -f $APP_DIR/context/Web/*.pyc
 		rm -f $APP_DIR/context/Lap/*.pyc
 		rm -f $APP_DIR/context/Grid/*.pyc
+		sleep 2
 		$0 start
 		;;
 
 	restart)
 		$0 stop
+		sleep 2
 		$0 start
 		;;
 
