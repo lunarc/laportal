@@ -27,7 +27,7 @@ from HyperText.HTML import *
 class WelcomePage(ApplicationPage):
 	"""Empty page displaying the default welcome text."""
 	def title(self):
-		"""Return page title."
+		"""Return page title."""
 		return 'Welcome!'
 	
 
