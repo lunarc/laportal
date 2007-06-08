@@ -183,6 +183,18 @@ class DefaultPage(Page, FieldValidationMixin):
 			
 		if self.onIncludeAdditionalJavaScript():
 			self.writeln(self.onGetAdditionalJavaScript())
+			
+		#<link rel="stylesheet" type="text/css" href="../../resources/css/ext-all.css" />
+		#<script type="text/javascript" src="../../adapter/yui/yui-utilities.js"></script>
+		#<script type="text/javascript" src="../../adapter/yui/ext-yui-adapter.js"></script>
+		#<script type="text/javascript" src="../../ext-all.js"></script>
+			
+		if self.onUseExtJS():
+			self.writeln(LINK(rel="stylesheet",href=self.pageLoc()+"/ext/resources/css/ext-all.css"))
+			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/adapter/yui/yui-utilities.js"))
+			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/adapter/yui/ext-yui-adapter.js"))
+			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/ext-all.js"))
+			
 
 		
 	def htBodyArgs(self):
@@ -213,6 +225,10 @@ class DefaultPage(Page, FieldValidationMixin):
 			self.writeln(IMG(src="%s/%s" % (self.pageLoc(), logoImage),
 				style="position:absolute; left:0px; top:0px; width: %s; height: %s;"
 				% (logoImageWidth, logoImageHeight)))
+			
+		if self.onUseExtJS():
+			extScript = SCRIPT(self.onGetExtJavascript(), type="text/javascript")
+			self.writeln(extScript)
 
 		if self.onUseMenu():
 		
@@ -323,6 +339,12 @@ class DefaultPage(Page, FieldValidationMixin):
 	
 	def onGetAdditionalJavaScript(self):
 		"""Override to add additional Javascript code to the page."""
+		return ""
+	
+	def onUseExtJS(self):
+		return false
+	
+	def onGetExtJavascript(self):
 		return ""
 
 

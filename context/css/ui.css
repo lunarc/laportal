@@ -7,19 +7,19 @@
 	/*margin: 0 auto; /* center for now */*/
 	/* ems so it will grow */
 	width: 20em;
-	background: url(/lap/context/images/lunarc-sbbody-r.gif) no-repeat bottom right;
+	background: url(/lap-develop/context/images/lunarc-sbbody-r.gif) no-repeat bottom right;
 	font-size: 100%;
 	margin-left: auto;
     margin-right: auto;	
 }
 .lapWindowHead {
-	background: url(/lap/context/images/lunarc-sbhead-r.gif) no-repeat top right;
+	background: url(/lap-develop/context/images/lunarc-sbhead-r.gif) no-repeat top right;
 	margin: 0;
 	padding: 0;
 	text-align: center;
 }
 .lapWindowHead h2 {
-	background: url(/lap/context/images/lunarc-sbhead-l.gif) no-repeat top left;
+	background: url(/lap-develop/context/images/lunarc-sbhead-l.gif) no-repeat top left;
 	margin: 0;
 	padding: 4px 30px 5px;
 	color: white; 
@@ -29,7 +29,7 @@
 	text-shadow: rgba(0,0,0,.4) 0px 2px 5px; /* Safari-only, but cool */
 }
 .lapWindowBody {
-	background: url(/lap/context/images/lunarc-sbbody-l.gif) no-repeat bottom left;
+	background: url(/lap-develop/context/images/lunarc-sbbody-l.gif) no-repeat bottom left;
 	margin: 0;
 	padding: 0.5em 1.5em 1.5em 1em;
 	font-size:100%;

@@ -246,8 +246,6 @@ class ManageJobPage(ApplicationSecurePage):
 			else:
 				jobNameList = jobNames
 				
-			self.pleaseWait("Submitting job(s)...")
-			
 			submittedJobIds = []
 			
 			# Submit all selected jobs
@@ -263,22 +261,10 @@ class ManageJobPage(ApplicationSecurePage):
 				taskFile.close()
 				
 				ARC = Grid.ARC.Ui(user)
-				resultVal, jobIds = ARC.submit(os.path.join(jobDir,"job.xrsl"))
+				ARC.threadedSubmit(os.path.join(jobDir,"job.xrsl"), jobName)
 				
-				if len(jobIds)>0:
-					for jobId in jobIds:
-						submittedJobIds.append(jobId)
-	
-			if len(submittedJobIds)>0:
-				message = "Submitted the following job(s):<br><br>"
-				for jobId in submittedJobIds:
-					lapInfo("Job %s submitted." % jobId)
-					message = message + jobId + "<br>"
-			else:
-				lapWarning("Job(s) could not be submitted.")
-				message = "Could not find any resources to submit the job."
-
-			self.setFormStatus(message)
+			self.setFormStatus("Job submission for selected jobs have been started.")
+			self.writeBody()
 		else:
 			self.setFormStatus("A job must be selected.")
 			self.writeBody()

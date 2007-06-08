@@ -4,9 +4,9 @@ import sys
 import pickle
 
 majorVersion   = 0
-minorVersion   = 8
-releaseVersion = 4
-textVersion    = "Royal Scot Release"
+minorVersion   = 9
+releaseVersion = 0
+textVersion    = "Silver Jubilee Release"
 
 description    = "LUNARC Application Web Portal"
 copyright      = "Copyright &#169 2004-2007 LUNARC, Lund University"

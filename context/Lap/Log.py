@@ -23,63 +23,78 @@
 import logging
 import LapSite
 
+from threading import Lock
+
 global lapLogger
 
-def _getLapLogger():
+class LapLogger:
+    """ LAP Logger """
 
-	global lapLogger
-	logger = None
+    __instance = None
 
-	try:
-		logger = lapLogger
-	except:
-		logger = logging.getLogger('lap')
-		hdlr = logging.FileHandler(LapSite.Logging["LogFile"])
-		formatter = logging.Formatter('%(asctime)s %(levelname)s\t: %(message)s')
-		hdlr.setFormatter(formatter)
-		logger.addHandler(hdlr)
+    def __init__(self):
+        """ Create singleton instance """
+        # Check whether we already have an instance
+        if LapLogger.__instance is None:
+            # Create and remember instance
+			
+			logger = logging.getLogger('lap')
+			hdlr = logging.FileHandler(LapSite.Logging["LogFile"])
+			formatter = logging.Formatter('%(asctime)s %(levelname)s\t: %(message)s')
+			hdlr.setFormatter(formatter)
+			logger.addHandler(hdlr)
+	
+			if LapSite.Logging.has_key("LogLevel"):
+					if LapSite.Logging["LogLevel"] == "DEBUG":
+							logger.setLevel(logging.DEBUG)
+					elif LapSite.Logging["LogLevel"] == "WARNING":
+							logger.setLevel(logging.WARNING)
+					elif LapSite.Logging["LogLevel"] == "INFO":
+							logger.setLevel(logging.INFO)
+					else:
+							logger.setLevel(logging.WARNING)
+			else:
+					logger.setLevel(logging.WARNING)
+	
+			logger.info("Logging started.")
+			logger.warning("Logging started.")
+			logger.error("Logging stated.")
+			
+			LapLogger.__instance = logger
 
-		if LapSite.Logging.has_key("LogLevel"):
-		        if LapSite.Logging["LogLevel"] == "DEBUG":
-		                logger.setLevel(logging.DEBUG)
-		        elif LapSite.Logging["LogLevel"] == "WARNING":
-		                logger.setLevel(logging.WARNING)
-		        elif LapSite.Logging["LogLevel"] == "INFO":
-		                logger.setLevel(logging.INFO)
-		        else:
-		                logger.setLevel(logging.WARNING)
-		else:
-		        logger.setLevel(logging.WARNING)
+        # Store instance reference as the only member in the handle
+        self.__dict__['_LapLogger__instance'] = LapLogger.__instance
 
-		logger.info("Logging started.")
-		logger.warning("Logging started.")
-		logger.error("Logging stated.")
-		lapLogger = logger
+    def __getattr__(self, attr):
+        """ Delegate access to implementation """
+        return getattr(self.__instance, attr)
 
-	return logger
+    def __setattr__(self, attr, value):
+        """ Delegate access to implementation """
+        return setattr(self.__instance, attr, value)
 
 
 def lapDebug(message):
 	"""Log a debug message to LAP log file."""
-	logger=_getLapLogger()
+	logger=LapLogger()
 	logger.debug(message)
 	
 def lapInfo(message):
 	"""Log an informational message to the LAP log file."""
-	logger=_getLapLogger()
+	logger=LapLogger()
 	logger.info(message)
 
 def lapWarning(message):
 	"""Log a warning message to the LAP log file."""
-	logger=_getLapLogger()
+	logger=LapLogger()
 	logger.warning(message)
 
 def lapError(message):
 	"""Log an error message to the LAP log file."""
-	logger=_getLapLogger()
+	logger=LapLogger()
 	logger.error(message)
 	
 def lapCritical(message):
 	"""Log a critical message to the LAP log file."""
-	logger=_getLapLogger()
+	logger=LapLogger()
 	logger.critical(message)

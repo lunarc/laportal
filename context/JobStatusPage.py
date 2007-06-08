@@ -22,14 +22,7 @@
 
 from Web.ApplicationSecurePage import ApplicationSecurePage
 from MiscUtils.Funcs import uniqueId
-import string, types, time
-
-jobRunningColor   = "51, 204, 0"
-jobQueuingColor   = "255, 204, 0"
-jobAcceptedColor  = "0, 204, 204"
-jobDeletedColor   = "204, 0, 0"
-jobFinishingColor = "51, 204, 0"
-jobFinishedColor  = "51, 204, 0"
+import string, types, time, os 
 
 import Web.Dialogs
 import Web.Ui
@@ -40,45 +33,121 @@ class JobStatusPage(ApplicationSecurePage):
 	"""OBSOLETE, do not use."""
 	def title(self):
 		return 'Job status'
+	
+	def onUseExtJS(self):
+		return True
+	
+	def onGetExtJavascript(self):
+		return """
+/*
+ * Ext JS Library 1.0.1
+ * Copyright(c) 2006-2007, Ext JS, LLC.
+ * licensing@extjs.com
+ * 
+ * http://www.extjs.com/license
+ */
+
+Ext.onReady(function() {
+    var btn = Ext.get("create-grid");
+    btn.on("click", function(){
+        btn.dom.disabled = true;
+
+        // create the grid
+        var grid = new Ext.grid.TableGrid("the-table");
+        grid.render();
+
+    }, false, {single:true}); // run once
+});
+
+/**
+ * @class Ext.grid.TableGrid
+ * @extends Ext.grid.Grid
+ * A Grid which creates itself from an existing HTML table element.
+ * @constructor
+ * @param {String/HTMLElement/Ext.Element} table The table element from which this grid will be created - 
+ * The table MUST have some type of size defined for the grid to fill. The container will be 
+ * automatically set to position relative if it isn't already.
+ * @param {Object} config A config object that sets properties on this grid and has two additional (optional)
+ * properties: fields and columns which allow for customizing data fields and columns for this grid.
+ * @history
+ * 2007-03-01 Original version by Nige "Animal" White
+ * 2007-03-10 jvs Slightly refactored to reuse existing classes
+ */
+Ext.grid.TableGrid = function(table, config) {
+    config = config || {};
+    var cf = config.fields || [], ch = config.columns || [];
+    table = Ext.get(table);
+
+    var ct = table.insertSibling();
+
+    var fields = [], cols = [];
+    var headers = table.query("thead th");
+	for (var i = 0, h; h = headers[i]; i++) {
+		var text = h.innerHTML;
+		var name = 'tcol-'+i;
+
+        fields.push(Ext.applyIf(cf[i] || {}, {
+            name: name,
+            mapping: 'td:nth('+(i+1)+')/@innerHTML'
+        }));
+
+		cols.push(Ext.applyIf(ch[i] || {}, {
+			'header': text,
+			'dataIndex': name,
+			'width': h.offsetWidth,
+			'tooltip': h.title,
+            'sortable': true
+        }));
+	}
+
+    var ds  = new Ext.data.Store({
+        reader: new Ext.data.XmlReader({
+            record:'tbody tr'
+        }, fields)
+    });
+
+	ds.loadData(table.dom);
+
+    var cm = new Ext.grid.ColumnModel(cols);
+
+    if(config.width || config.height){
+        ct.setSize(config.width || 'auto', config.height || 'auto');
+    }
+    if(config.remove !== false){
+        table.remove();
+    }
+
+    Ext.grid.TableGrid.superclass.constructor.call(this, ct,
+        Ext.applyIf(config, {
+            'ds': ds,
+            'cm': cm,
+            'sm': new Ext.grid.RowSelectionModel(),
+            autoHeight:true,
+            autoWidth:true
+        }
+    ));
+};
+
+Ext.extend(Ext.grid.TableGrid, Ext.grid.Grid);
+"""
 
 	def writeContent(self):
 		user = Lap.Session.User(self.session().value('authenticated_user'))
 		ui = Grid.ARC.Ui(user)
-		jobs = ui.jobStatus()
 		
-		if jobs==None:
-			Web.Dialogs.messageBox(self, "grid-proxy is about to expire please create a new proxy.", "Manage running jobs")
-		else:
-
-			table = Web.Ui.Table(len(jobs)+1,4)
-			table.setItem(0, 0, "ID")
-			table.setItem(0, 1, "Name")
-			table.setItem(0, 2, "Status")
-			table.setItem(0, 3, "Error")
-	
-			row = 1		
-	
-			for key in jobs.keys():
-				table.setItem(row,0,key)
-				table.setItem(row,1,jobs[key]["name"])
-				if jobs[key]["status"] == "INLRMS: Q":
-					table.setColor(row,2, jobQueuingColor)
-				if jobs[key]["status"] == "INLRMS: wait":
-					table.setColor(row,2, jobQueuingColor)
-				if jobs[key]["status"] == "INLRMS: R":
-					table.setColor(row,2, jobRunningColor)
-				if jobs[key]["status"] == "ACCEPTED":
-					table.setColor(row,2, jobAcceptedColor)
-				if jobs[key]["status"] == "DELETED":
-					table.setColor(row,2, jobDeletedColor)
-				if jobs[key]["status"] == "FINISHING":
-					table.setColor(row,2, jobFinishingColor)
-				if jobs[key]["status"][0:8] == "FINISHED":
-					table.setColor(row,2, jobFinishedColor)
-				table.setItem(row,2,jobs[key]["status"])
-				if jobs.has_key("error"):
-					table.setItem(row,3,jobs[key]["error"])
-				row = row + 1
+		
+		jobListFilename = os.path.join(user.getDir(),"jobList.db")
+		jobList = Grid.ARC.JobList(jobListFilename)
+		
+		jobDict = jobList.get()
+		
+		for key in jobDict.keys():
+				
+			self.write(jobDict[key][0]+", "+jobDict[key][1]+", "+str(jobDict[key][2]))
+			self.writeln(" "+jobDict[key][3]+"<br>")
 			
-			table.render(self)
-
+			if len(jobDict[key][4])>0:
+				for line in jobDict[key][4]:
+					self.writeln(">"+line)
+				self.writeln("<br><br>")
+				

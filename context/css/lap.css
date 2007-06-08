@@ -118,7 +118,7 @@ a:visited {
 
 #menu {
     background-color:#DAE3ED;
-	background-image: url(/lap/context/images/menu_shadow.gif);
+	background-image: url(/lap-develop/context/images/menu_shadow.gif);
 	background-repeat:  repeat-x;
 	background-position: bottom left;
     border-bottom:1px solid white;
