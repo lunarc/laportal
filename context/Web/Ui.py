@@ -1317,4 +1317,281 @@ class Window:
 		window.append(self._body)
 		
 		page.write(window)
+		
+class ExtEntity:
+	def __init__(self, page):
+		self._page = page
+		
+	def getPage(self):
+		return self._page
+	
+	def render(self):
+		pass
+	
+	def renderToString(self):
+		return ""
+	
+	def renderToTag(self):
+		return None
+	
+	def getStyleSheet(self):
+		return ""
+	
+	def getJavaScript(self):
+		return ""
+	
+	def getOnReadyInit(self):
+		return ""
+	
+
+#var dlg = new Ext.BasicDialog("my-dlg", {
+#        height: 200,
+#        width: 300,
+#        minHeight: 100,
+#        minWidth: 150,
+#        modal: true,
+#        proxyDrag: true,
+#        shadow: true
+#    });
+	
+class ExtBasicDialog(ExtEntity):
+	def __init__(self, page, elementId="extbasicdialog", width=300, height=300, minWidth=100, minHeight=150, modal=False, proxyDrag=False, shadow=True):
+		ExtEntity.__init__(self, page)
+		
+		self._properties = {}
+		self._properties["elementId"] = elementId
+		self._properties["width"] = width
+		self._properties["height"] = height;
+		self._properties["minWidth"] = minWidth;
+		self._properties["minHeight"] = minHeight;
+		if modal:
+			self._properties["modal"] = "true"
+		else:
+			self._properties["modal"] = "false"
+		if proxyDrag:
+			self._properties["proxyDrag"] = "true"
+		else:
+			self._properties["proxyDrag"] = "false"
+		if shadow:
+			self._properties["shadow"] = "true"
+		else:
+			self._properties["shadow"] = "false"
+			
+			
+		self._dialogContent = ""
+		
+	#	<div id="hello-dlg" style="visibility:hidden;">
+	#    <div class="x-dlg-hd">Layout Dialog</div>
+	#    <div class="x-dlg-bd">
+	
+	def setContent(self, tag):
+		self._dialogContent = tag
+			
+	def _render(self):
+		
+		dialogDiv = DIV(id=self._properties["elementId"])
+		headerDiv = DIV("Layout Dialog", klass="x-dlg-hd")
+		borderDiv = DIV(klass="x-dlg-bd")
+		dialogDiv.append(headerDiv)
+		dialogDiv.append(borderDiv)
+		borderDiv.append(self._dialogContent)
+		
+		return dialogDiv
+		
+	def render(self):
+		tag = self._render()
+		self._page.writeln(tag)
+		
+	def renderToString(self):
+		tag = self._render()
+		return tag.__str__()
+	
+	def renderToTag(self):
+		return self._render()
+	
+	def getStyleSheet(self):
+		return ""
+	
+	def getJavaScript(self):
+		return ""
+	
+	def getOnReadyInit(self):
+		return """
+var dlg = new Ext.BasicDialog("%(elementId)s", {
+	height: %(height)d,
+	width: %(width)d,
+	minHeight: %(minHeight)d,
+	minWidth: %(minWidth)d,
+	modal: %(modal)s,
+	proxyDrag: %(proxyDrag)s,
+	shadow: %(shadow)s,
+	closable: false
+});
+dlg.addKeyListener(27, dlg.hide, dlg); // ESC can also close the dialog
+//dlg.addButton('OK', dlg.hide, dlg);    // Could call a save function instead of hiding
+//dlg.addButton('Cancel', dlg.hide, dlg);
+dlg.show();
+	""" % (self._properties)
+	
+		
+
+class ExtGrid(ExtEntity):
+	def __init__(self, page, id="extgrid", rows=6, cols=6):
+		ExtEntity.__init__(self, page)
+		self._header = []
+		self._rows = rows
+		self._cols = cols
+		self.__setupGrid()
+	
+	def __setupGrid(self):
+		self._header = ["" for s in range(self._cols)]
+		self._grid = [["" for c in range(self._cols)] for r in range(self._rows)]
+		
+	def setSize(self, rows, cols):
+		self._rows = rows
+		self._cols = cols
+		self.__setupGrid()
+		
+	def setHeader(self, idx, item):
+		if (idx>=0) and (idx<self._cols):
+			self._header[idx] = item
+			
+	def setHeaders(self, items):
+		if len(items)<=self._cols:
+			pos = 0
+			for item in items:
+				self._header[pos] = item
+				pos += 1
+
+	def setItem(self, row, col, item):
+		if (row>=0) and (row<self._rows) and (col>=0) and (col<=self._cols):
+			self._grid[row][col] = item
+			
+	def setItems(self, row, items):
+		if (row>=0) and (row<self._rows) and len(items)<=self._cols:
+			pos = 0
+			for item in items:
+				self._grid[row][pos] = item
+				pos += 1
+				
+	def _render(self):
+
+		table = TABLE(cellspacing="0", id="the-table")
+		tableHead = THEAD()
+		tableBody = TBODY()
+		table.append(tableHead)
+		table.append(tableBody)
+		
+		#status, jobId, exitCode, name, errorText
+
+		tableHeadRow = TR()
+		tableHead.append(tableHeadRow)
+		
+		for header in self._header:
+			tableHeadRow.append(TH(header))
+		
+		for row in range(self._rows):
+			
+			tableBodyRow = TR()
+			tableBody.append(tableBodyRow)
+			
+			for col in range(self._cols):
+				tableBodyRow.append(TD(self._grid[row][col]))
+				
+		return table
+					
+	def render(self):
+		tag = self._render()
+		self._page.writeln(tag)
+		
+	def renderToString(self):
+		tag = self._render()
+		return tag.__str__()
+	
+	def renderToTag(self):
+		return self._render()
+		
+	def getJavaScript(self):
+		return """
+/**
+ * @class Ext.grid.TableGrid
+ * @extends Ext.grid.Grid
+ * A Grid which creates itself from an existing HTML table element.
+ * @constructor
+ * @param {String/HTMLElement/Ext.Element} table The table element from which this grid will be created - 
+ * The table MUST have some type of size defined for the grid to fill. The container will be 
+ * automatically set to position relative if it isn't already.
+ * @param {Object} config A config object that sets properties on this grid and has two additional (optional)
+ * properties: fields and columns which allow for customizing data fields and columns for this grid.
+ * @history
+ * 2007-03-01 Original version by Nige "Animal" White
+ * 2007-03-10 jvs Slightly refactored to reuse existing classes
+ */
+Ext.grid.TableGrid = function(table, config) {
+    config = config || {};
+    var cf = config.fields || [], ch = config.columns || [];
+    table = Ext.get(table);
+
+    var ct = table.insertSibling();
+
+    var fields = [], cols = [];
+    var headers = table.query("thead th");
+	for (var i = 0, h; h = headers[i]; i++) {
+		var text = h.innerHTML;
+		var name = 'tcol-'+i;
+
+        fields.push(Ext.applyIf(cf[i] || {}, {
+            name: name,
+            mapping: 'td:nth('+(i+1)+')/@innerHTML'
+        }));
+
+		cols.push(Ext.applyIf(ch[i] || {}, {
+			'header': text,
+			'dataIndex': name,
+			'width': h.offsetWidth,
+			'tooltip': h.title,
+            'sortable': true
+        }));
+	}
+
+    var ds  = new Ext.data.Store({
+        reader: new Ext.data.XmlReader({
+            record:'tbody tr'
+        }, fields)
+    });
+
+	ds.loadData(table.dom);
+
+    var cm = new Ext.grid.ColumnModel(cols);
+
+    if(config.width || config.height){
+        ct.setSize(config.width || 'auto', config.height || 'auto');
+    }
+    if(config.remove !== false){
+        table.remove();
+    }
+
+    Ext.grid.TableGrid.superclass.constructor.call(this, ct,
+        Ext.applyIf(config, {
+            'ds': ds,
+            'cm': cm,
+            'sm': new Ext.grid.RowSelectionModel(),
+            autoHeight:true,
+            autoWidth:true,
+			autoSizeColumns: true,
+			monitorWindowResize: true,
+			trackMouseOver: true			
+        }
+    ));
+};
+
+Ext.extend(Ext.grid.TableGrid, Ext.grid.Grid);
+"""
+
+	def getOnReadyInit(self):
+		return """
+var grid = new Ext.grid.TableGrid("the-table");
+grid.render();
+"""
+
 	

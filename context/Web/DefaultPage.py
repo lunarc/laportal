@@ -82,6 +82,9 @@ class DefaultPage(Page, FieldValidationMixin):
 			return self.session().value(key)
 		else:
 			return None
+		
+	def addExtControl(self, extControl):
+		self._extControls.append(extControl)
 
 	# ----------------------------------------------------------------------
 	# Methods
@@ -132,7 +135,9 @@ class DefaultPage(Page, FieldValidationMixin):
 		self.menuBar.setPosition(0,90)
 		self.menuBar.setFullWidth(True)
 		
+		self._extControls = []
 		self.onInitMenu(self.menuBar, self.adapterName)
+		self.onInit(self.adapterName)
 		
 	def writeBody(self):
 		"""Write the body parts of the page
@@ -190,11 +195,32 @@ class DefaultPage(Page, FieldValidationMixin):
 		#<script type="text/javascript" src="../../ext-all.js"></script>
 			
 		if self.onUseExtJS():
+			#self.writeln('<LINK rel="stylesheet",href="'+self.pageLoc()+'/ext/resources/css/ext-all.css"/>')
 			self.writeln(LINK(rel="stylesheet",href=self.pageLoc()+"/ext/resources/css/ext-all.css"))
 			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/adapter/yui/yui-utilities.js"))
 			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/adapter/yui/ext-yui-adapter.js"))
 			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/ext-all.js"))
 			
+		if self.onUseExtJS():
+			"""Render code needed for the ExtJS controls."""
+			
+			# First render the OnReady function with declarations for each control.
+			
+			onReadyString = ""
+			
+			for extControl in self._extControls:
+				onReadyString += extControl.getOnReadyInit() + "\n\n"
+
+			onReadyString = "Ext.onReady(function() {\n"+onReadyString+"\n});\n\n"
+			
+			extOnReadyScript = SCRIPT(onReadyString, type="text/javascript")
+			self.writeln(extOnReadyScript)
+			
+			# Render the different JavaScript additions needed for each control.
+				
+			for extControl in self._extControls:
+				extScript = SCRIPT(extControl.getJavaScript(), type="text/javascript")
+				self.writeln(extScript)
 
 		
 	def htBodyArgs(self):
@@ -226,10 +252,6 @@ class DefaultPage(Page, FieldValidationMixin):
 				style="position:absolute; left:0px; top:0px; width: %s; height: %s;"
 				% (logoImageWidth, logoImageHeight)))
 			
-		if self.onUseExtJS():
-			extScript = SCRIPT(self.onGetExtJavascript(), type="text/javascript")
-			self.writeln(extScript)
-
 		if self.onUseMenu():
 		
 			if self.onUseAlternateMenu():
@@ -263,6 +285,13 @@ class DefaultPage(Page, FieldValidationMixin):
 
 		Use the menuBar instance to fill the menu with menus.
 		"""
+		pass
+	
+	def onInit(self, adapterName):
+		"""This function is called when a servlet is woken up.
+		
+		Use this function to instanciate classes needed for servlet
+		operation."""
 		pass
 	
 	def onUseLogo(self):
@@ -342,10 +371,8 @@ class DefaultPage(Page, FieldValidationMixin):
 		return ""
 	
 	def onUseExtJS(self):
-		return false
-	
-	def onGetExtJavascript(self):
-		return ""
+		return False
+		
 
 
 
