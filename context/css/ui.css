@@ -64,6 +64,7 @@ form fieldset legend {
   font-weight: bold;
 }
 
+/*
 label {
   font-size: 100%;
   width: 8em;
@@ -77,13 +78,13 @@ label u {
   font-style: normal;
   text-decoration: underline;
 }
-
 input, select, textarea {
   font-family: Tahoma, Arial, sans-serif;
   font-size: 100%;
   color: #000000;
   margin-bottom: 0.5em;
 }
+*/
 
 textarea {
   overflow: auto;

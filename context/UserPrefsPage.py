@@ -57,7 +57,7 @@ class UserPrefsPage(ApplicationSecurePage):
 			
 			adapterName = self.request().adapterName()	
 			
-			form = Web.Ui.Form("userPrefsPage", "%s/context/UserPrefsPage" % adapterName, "User preferences", "35em")
+			form = Web.Ui.ExtForm("userPrefsPage", "%s/context/UserPrefsPage" % adapterName, "User preferences", "35em")
 	
 			form.addText("Default email", "defaultEmail", user.getDefaultMail(), "16em", "20em")
 			

@@ -111,6 +111,9 @@ class DefaultPage(Page, FieldValidationMixin):
 		"""Returns the true workind directory of the application"""
 		return "%s/%s" % (LapSite.Dirs["AppWorkDir"], LapSite.Application["ContextName"])
 	
+	def redrawForm(self):
+		self.writeBody()
+	
 	# ----------------------------------------------------------------------
 	# Overidden methods (WebKit)
 	# ----------------------------------------------------------------------			
@@ -266,10 +269,24 @@ class DefaultPage(Page, FieldValidationMixin):
 			contentDivId = self.onGetContentDivId()
 		
 			self.writeln('<DIV id="%s">' % contentDivId)
-			self.writeContent()
+			if self.onUseExtJS():
+				print "Rendering EXT controls."
+				if len(self._extControls)>0:
+					for extControl in self._extControls:
+						extControl.render()
+				else:
+					self.writeContent()
+			else:
+				self.writeContent()
 			self.writeln('</DIV>')
 		else:
-			self.writeContent()
+			if self.onUseExtJS():
+				print "Rendering EXT controls."
+				for extControl in self._extControls:
+					extControl.render()
+				self.writeContent()
+			else:
+				self.writeContent()
 
 			
 		if self.onUseTooltips():
@@ -310,7 +327,7 @@ class DefaultPage(Page, FieldValidationMixin):
 		"""Override to change tooltip behavior. 
 
 		Return False to disable tooltips. (Default True)"""
-		return True
+		return False
 	
 	def onGetContentDivId(self):
 		"""Return name of content div. Default "workarea"."""
@@ -371,7 +388,7 @@ class DefaultPage(Page, FieldValidationMixin):
 		return ""
 	
 	def onUseExtJS(self):
-		return False
+		return True
 		
 
 
