@@ -30,10 +30,10 @@ import string, os, re
 
 from HyperText.HTML import *
 
-import Ui
-import Lap.Utils
-
 import LapSite
+
+import Ui
+import UiExt
 
 class DefaultPage(Page, FieldValidationMixin):
 	"""Abstract base class for all pages in the portal.
@@ -83,12 +83,60 @@ class DefaultPage(Page, FieldValidationMixin):
 		else:
 			return None
 		
-	def addExtControl(self, extControl):
-		self._extControls.append(extControl)
+	def addExtControl(self, name, extControl):
+		self._extControls.add(extControl)
+		self._extControlDict[name] = extControl
+		
+	def getExtControl(self, name):
+		if self._extControlDict.has_key(name):
+			return self._extControlDict[name]
+		else:
+			return None
 
 	# ----------------------------------------------------------------------
 	# Methods
-	# ----------------------------------------------------------------------		
+	# ----------------------------------------------------------------------
+	
+	def uploadFile(self, fieldName, destDir):
+		"""Handles a HTTP file upload request from the
+		request file, fieldName, and copies it to the directory
+		specified by destDir."""
+		if self.request().hasField(fieldName):
+
+			filename = ""
+
+			ok = True
+			try:
+				f = self.request().field(fieldName)
+				fileContent = f.file.read()
+				
+				
+				if f.filename.find("\\")!=-1:
+					lapDebug("Explorer upload...")
+					
+					lastBackslash = f.filename.rfind("\\")
+					filename = f.filename[lastBackslash+1:]
+					lapDebug("modified filename = " + filename)
+				else:
+					filename = f.filename
+					
+				lapDebug("Upload filename = " + filename)
+				inputFile = file(os.path.join(destDir, filename), "w")
+				inputFile.write(fileContent)
+				inputFile.close()
+			except:
+				ok = False
+				pass
+			
+			if ok:
+				lapInfo("File, %s, uploaded to %s." % (filename, destDir))
+				return ok, filename
+			else:
+				return ok, ""
+			
+		else:
+			return False, ""
+	
 
 	def hasProperty(self, key):
 		"""Returns True if the page class has the property, 'key'."""
@@ -113,10 +161,16 @@ class DefaultPage(Page, FieldValidationMixin):
 	
 	def redrawForm(self):
 		self.writeBody()
+		
+	def redraw(self):
+		self.writeBody()
 	
 	# ----------------------------------------------------------------------
 	# Overidden methods (WebKit)
-	# ----------------------------------------------------------------------			
+	# ----------------------------------------------------------------------
+	
+	def actions(self):
+		return Page.actions(self) + self._extControls.actions
 	
 	def awake(self, transaction):
 		"""Servlet wake-up initialisation
@@ -138,7 +192,9 @@ class DefaultPage(Page, FieldValidationMixin):
 		self.menuBar.setPosition(0,90)
 		self.menuBar.setFullWidth(True)
 		
-		self._extControls = []
+		self._extControls = UiExt.Container(self)
+		self._extControlDict = {}
+
 		self.onInitMenu(self.menuBar, self.adapterName)
 		self.onInit(self.adapterName)
 		
@@ -200,31 +256,12 @@ class DefaultPage(Page, FieldValidationMixin):
 		if self.onUseExtJS():
 			#self.writeln('<LINK rel="stylesheet",href="'+self.pageLoc()+'/ext/resources/css/ext-all.css"/>')
 			self.writeln(LINK(rel="stylesheet",href=self.pageLoc()+"/ext/resources/css/ext-all.css"))
-			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/adapter/yui/yui-utilities.js"))
-			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/adapter/yui/ext-yui-adapter.js"))
+			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/adapter/ext/ext-base.js"))
 			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/ext-all.js"))
 			
 		if self.onUseExtJS():
 			"""Render code needed for the ExtJS controls."""
-			
-			# First render the OnReady function with declarations for each control.
-			
-			onReadyString = ""
-			
-			for extControl in self._extControls:
-				onReadyString += extControl.getOnReadyInit() + "\n\n"
-
-			onReadyString = "Ext.onReady(function() {\n"+onReadyString+"\n});\n\n"
-			
-			extOnReadyScript = SCRIPT(onReadyString, type="text/javascript")
-			self.writeln(extOnReadyScript)
-			
-			# Render the different JavaScript additions needed for each control.
-				
-			for extControl in self._extControls:
-				extScript = SCRIPT(extControl.getJavaScript(), type="text/javascript")
-				self.writeln(extScript)
-
+			self.writeln(SCRIPT(self._extControls.renderJSToString(), type="text/javascript"))
 		
 	def htBodyArgs(self):
 		"""Provide body arguments for the page
@@ -271,20 +308,14 @@ class DefaultPage(Page, FieldValidationMixin):
 			self.writeln('<DIV id="%s">' % contentDivId)
 			if self.onUseExtJS():
 				print "Rendering EXT controls."
-				if len(self._extControls)>0:
-					for extControl in self._extControls:
-						extControl.render()
-				else:
-					self.writeContent()
+				self._extControls.render()
 			else:
 				self.writeContent()
 			self.writeln('</DIV>')
 		else:
 			if self.onUseExtJS():
 				print "Rendering EXT controls."
-				for extControl in self._extControls:
-					extControl.render()
-				self.writeContent()
+				self._extControls.render()
 			else:
 				self.writeContent()
 
