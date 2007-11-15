@@ -25,9 +25,11 @@ import string, os
 from HyperText.HTML import *
 from Web.SecurePage import SecurePage
 
-import Web.Ui
 import Lap.Version
 from Lap.Log import *
+
+import Web.Ui
+import Web.UiExt
 
 import LapSite
 
@@ -259,4 +261,82 @@ class ApplicationSecurePage(SecurePage):
 		menuBar.addMenu(menuManage)
 		menuBar.addMenu(menuStorage)
 		menuBar.addMenu(menuAbout)
+		
+	def onInitToolbar(self, toolbar, adapterName):
+		"""Initialise menu with static and dynamic menus (plugins)."""
+		
+		# --- Information menu --- 
+		
+		menuSession = Web.UiExt.Menu(self, "menuSession")
+		menuSession.add("Log out...", self.pageLoc()+"/LogoutPage")
+
+		menuPreferences = Web.UiExt.Menu(self, "menuPreferences")
+		menuPreferences.add("Grid...",self.pageLoc()+"/GridPrefsPage")
+		menuPreferences.add("User...",self.pageLoc()+"/UserPrefsPage")
+		
+		if self.isVOAdminUser():
+			menuPreferences.add("VO Admin...",self.pageLoc()+"/VOAdminPage")
+
+		menuCreate = Web.UiExt.Menu(self, "menuJobs")
+
+		jobPluginList = self._findJobPlugins()
+
+		for plugin in jobPluginList:
+			pluginName = plugin[0]
+			pluginDir = plugin[1]
+			pluginDescr = plugin[2]
+			menuCreate.add("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomJobPage?createjob=0" % (pluginName))
+		
+		menuJoin = Web.UiExt.Menu(self, "menuJoin")
+
+		voPluginList = self._findVOPlugins()
+
+		for plugin in voPluginList:
+			pluginName = plugin[0]
+			pluginDir = plugin[1]
+			pluginDescr = plugin[2]
+			menuJoin.add("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomVOPage" % (pluginName))
+			
+		menuInfo = Web.UiExt.Menu(self, "menuInfo")
+
+		docPluginList = self._findDocPlugins()
+
+		for plugin in docPluginList:
+			pluginName = plugin[0]
+			pluginDir = plugin[1]
+			pluginDescr = plugin[2]
+			pluginOrder = plugin[3]
+			pluginWidth = plugin[4]
+			pluginHeight = plugin[5]
+			pluginDocType = plugin[6]
+			if pluginDocType == "html":
+				menuInfo.add("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomDocPage" % (pluginName), "_blank",
+							 "width=%d,height=%d,location=no,menubar=no,toolbar=yes,scrollbars=yes,resizable=yes" %
+							 (pluginWidth, pluginHeight))
+			else:
+				menuInfo.add("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomDocViewPage" % (pluginName), "_blank",
+							 "width=%d,height=%d,location=no,menubar=no,toolbar=no,scrollbars=yes,resizable=yes" % (pluginWidth, pluginHeight))
+
+		menuManage = Web.UiExt.Menu(self, "menuManage")
+		menuManage.add("Jobs definitions...",self.pageLoc()+"/ManageJobPage")
+		menuManage.add("Running jobs...",self.pageLoc()+"/PleaseWaitPage?URL=ManageGridJobPage&Message=Querying for jobs...")
+		menuManage.add("Syncronise jobs...",self.pageLoc()+"/PleaseWaitPage?URL=SyncJobsPage&Message=Syncronising job list...")
+		
+		menuStorage = Web.UiExt.Menu(self, "menuStorage")
+		menuStorage.add("Query resources...", "http://www.nordugrid.org/monitor/loadmon.php")
+		menuStorage.add("GridFTP client...", self.pageLoc()+"/GridFtpClientPage")
+
+		menuAbout = Web.UiExt.Menu(self, "menuAbout")
+		menuAbout.add("LUNARC...",self.pageLoc()+"/SecureWelcomePage")
+		menuAbout.add("Portal...",self.pageLoc()+"/SecureWelcomePage")
+		
+		toolbar.add("Information", menuInfo)
+		toolbar.add("Session", menuSession)
+		toolbar.add("Join", menuJoin)
+		toolbar.add("Preferencese", menuPreferences)
+		toolbar.add("Create", menuCreate)
+		toolbar.add("Manage", menuManage)
+		toolbar.add("Storage", menuStorage)
+		toolbar.add("About", menuAbout)
+		
 		

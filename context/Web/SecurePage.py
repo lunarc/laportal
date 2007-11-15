@@ -114,6 +114,7 @@ class SecurePage(DefaultPage):
 		elif request.hasField('login') and request.hasField('proxy'):
 			
 			lapInfo("User logging in.")
+			print "User logging in."
 			
 			# They are logging in.  Clear session
 			
@@ -134,7 +135,6 @@ class SecurePage(DefaultPage):
 				except:
 					lapWarning("Could not read proxy.")
 					proxy = None
-					pass
 			
 			# Check if they can successfully log in.  The loginid must match what was previously
 			# sent.
@@ -145,9 +145,9 @@ class SecurePage(DefaultPage):
 				request.delField('proxy')
 			else:
 				# Failed login attempt; have them try again.
+				session.invalidate()
 				request.setField('extra', 'Login failed.  Please try again.')
-				
-				url = "/LoginPage" 
+				url = "/LoginPage"
 				app.forward(trans, url)
 
 		# They aren't logging in; are they already logged in?

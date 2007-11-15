@@ -1,7 +1,7 @@
 #
 # VOPage base class module
 #
-# Copyright (C) 2006 Jonas Lindemann
+# Copyright (C) 2007 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,26 +20,23 @@
 
 """VOPage class module"""
 
-from Web.ApplicationSecurePage import ApplicationSecurePage
+from Web.ApplicationPage import ApplicationPage
 from time import *
 
 import os
 import sys
-import pwd
 import string
 import pickle
-
-import Grid.ARC
 
 import Lap
 import Lap.Session
 
 import Web
 import Web.Ui
-import Web.UiControls
+import Web.UiExt
 import Web.Dialogs
 
-class MenuTestPage(ApplicationSecurePage):
+class MenuTestPage(ApplicationPage):
 	"""VOPage base class
 	
 	This base class is the base for any VO plugins. The class implements
@@ -57,106 +54,156 @@ class MenuTestPage(ApplicationSecurePage):
 		adapterName = self.request().adapterName()
 		self._returnPage = "%s/context/" % returnPage
 		
-	def setFormInfo(self, status):
-		self.session().setValue("vopage_info", status)		
-
-	def setFormStatus(self, status, returnPage = ""):
-		
-		print "setFormStatus:"
-		
-		adapterName = self.request().adapterName()
-
-		if returnPage=="":
-			returnPage = self.onReturnPageName()
-
-		print "returnPage = ", returnPage
-		
-		self.session().setValue("vopage_status", status)
-		self.session().setValue("vopage_return_page", returnPage)	
-	
 	# ----------------------------------------------------------------------
 	# Overidden methods (WebKit)
 	# ----------------------------------------------------------------------			
 
-	def awake(self, transaction):
-		print "awake:"
-		ApplicationSecurePage.awake(self, transaction)
-		
 	def onInit(self, adapterName):
 		
-		self._form = Web.Ui.ExtForm(self, "testform", "MenuTestPage", "Join" , width="400px")
-		self._form.beginFieldSet("VO Information")
-		self._form.addControl(Web.UiControls.TextControl(name="test_new1", caption="NewControl", value="test1", size="10"))
-		self._form.addControl(Web.UiControls.TextControl(name="test_new2", caption="NewControl", value="test2", size="20"))
-		self._form.addControl(Web.UiControls.TextControl(name="test_new3", caption="NewControl", value="test3", size="30"))
-		self._form.endFieldSet()
-		self._form.beginFieldSet("User Information")
-		self._form.addNormalText("You will be joined to the VO as:<br><br>")
-		self._form.addNormalText(self.session().value('authenticated_user'))
-		self._form.endFieldSet()
-		self._form.beginFieldSet("Additional information")
-		self._form.addControl(Web.UiControls.TextAreaControl(name="test_new4", caption="Message To VO", value="test1"))
-		self._form.addControl(Web.UiControls.ButtonControl(name="test_new5", caption="Message To VO"))
-		self._form.endFieldSet()
-		self._form.setHaveSubmit(False)
-		self._form.addFormButton("Hide", "_action_hide")
+		form = Web.UiExt.Form(self, "testform")
+		form.caption = "Testform"
+		form.URL = "%s/context/MenuTestPage" % adapterName
+		form.width = 500
 		
-		self.addExtControl(self._form)
-
-		self._messageBox = Web.Ui.ExtForm(self, "messageForm", "MenuTestPage", "Show", width="300px")
-		self._messageBox.addNormalText("Show form again...")
-		self._messageBox.addFormButton("Show", "_action_show")
-		self._messageBox.hide()
+		fieldSet = Web.UiExt.FieldSet(self)
+		fieldSet.legend = "test"
 		
-		self.addExtControl(self._messageBox)
+		form.add(fieldSet)
+		
+		textField1 = Web.UiExt.TextField(self, 'textField1')
+		textField1.fieldLabel = "Name"
+		textField1.width = 175
+		textField1.allowBlank = False
 
-	#def writeContent(self):
-	#	
-	#	adapterName = self.request().adapterName()
-	#	
-	#	if self.session().hasValue("vopage_status"):
-	#	
-	#		# -----------------------------------
-	#		# Show any form messages
-	#		# -----------------------------------
-	#		
-	#		if self.session().value("vopage_status")<>"":
-	#			Web.Dialogs.messageBox(self, self.session().value("vopage_status"), "Message", self.session().value("vopage_return_page"))
-	#
-	#		self.session().delValue("vopage_status")
-	#		self.session().delValue("vopage_return_page")
-	#	else:
-	#		
-	#		# -----------------------------------
-	#		# Create VO form
-	#		# -----------------------------------
-	#		
-	#		
-	#		# -----------------------------------
-	#		# Show any form info messages
-	#		# -----------------------------------
-	#		
-	#		if self.session().hasValue("vopage_info"):
-	#			if self.session().value("vopage_info")<>"":
-	#				Web.Dialogs.infoBox(self, self.session().value("vopage_info"), "Information", form.getWidth())
-	#			self.session().delValue("vopage_info")
-			
-	def actions(self):
-		return ApplicationSecurePage.actions(self) + ["show", "hide"]
-	
-	def onUseExtJS(self):
+		fieldSet.add(textField1)
+		
+		textField2 = Web.UiExt.TextField(self, 'textField2')
+		textField2.fieldLabel = "Address"
+		textField2.width = 175
+		textField2.allowBlank = False
+		
+		fieldSet.add(textField2)
+		
+		textField2 = Web.UiExt.NumberField(self, 'numberField')
+		textField2.fieldLabel = "Number"
+		textField2.width = 175
+		textField2.allowBlank = False
+		
+		fieldSet.add(textField2)
+		
+		fieldSet2 = Web.UiExt.FieldSet(self)
+		fieldSet2.legend = "test2"
+		
+		form.add(fieldSet2)
+
+		comboBox = Web.UiExt.ComboBox(self, 'comboTest')
+		comboBox.add("Hello", "hello")
+		comboBox.add("Hello1", "hello1")
+		comboBox.add("Hello2", "hello2")
+		
+		fieldSet2.add(comboBox)
+
+		textArea = Web.UiExt.TextArea(self, 'textarea')
+		textArea.value = ["hello, world!", "helloo..."]
+		
+		fieldSet2.add(textArea)
+		
+		fieldSet3 = Web.UiExt.FieldSet(self)
+		fieldSet3.legend = "test3"
+		
+		form.add(fieldSet3)
+		
+		checkBox1 = Web.UiExt.CheckBox(self, 'checkBox1', 'checkBox1', 'value1', 'v1')
+		checkBox1.value = True
+		fieldSet3.add(checkBox1)
+
+		checkBox2 = Web.UiExt.CheckBox(self, 'checkBox1', 'checkBox2', 'value2', 'v2')
+		fieldSet3.add(checkBox2)
+
+		checkBox3 = Web.UiExt.CheckBox(self, 'checkBox1', 'checkBox3', 'value3', 'v3')
+		fieldSet3.add(checkBox3)
+
+		fieldSet4 = Web.UiExt.FieldSet(self)
+		fieldSet4.legend = "test4"
+		
+		form.add(fieldSet4)
+		
+		radio1 = Web.UiExt.Radio(self, 'radioTest4', 'radio1', 'value1', 'v1')
+		radio1.value = True
+		fieldSet4.add(radio1)
+
+		radio2 = Web.UiExt.Radio(self, 'radioTest4', 'radio2', 'value2', 'v2')
+		fieldSet4.add(radio2)
+
+		radio3 = Web.UiExt.Radio(self, 'radioTest4', 'radio3', 'value3', 'v3')
+		fieldSet4.add(radio3)
+
+		fieldSet5 = Web.UiExt.FieldSet(self)
+		fieldSet5.legend = "test5"
+		
+		form.add(fieldSet5)
+		
+		fileField = Web.UiExt.FileField(self, 'fileField')
+		fileField.destinationDir = "d:\dev\local-webware"
+		fieldSet5.add(fileField)
+		
+		buttonSet = Web.UiExt.ButtonSet(self, 'buttonSet')
+
+		submitButton = Web.UiExt.Button(self, 'test', 'Submit')
+		buttonSet.add(submitButton)
+
+		hideButton = Web.UiExt.Button(self, 'hide', 'Hide')
+		buttonSet.add(hideButton)
+		
+		form.add(buttonSet)
+
+		otherForm = Web.UiExt.Form(self, "showhideForm")
+		otherForm.caption = "Testform"
+		otherForm.URL = "%s/context/MenuTestPage" % adapterName
+		otherForm.width = "500px"
+		otherForm.visible = False
+		
+		showButton = Web.UiExt.Button(self, 'show', 'Show')
+		buttonSet2 = Web.UiExt.ButtonSet(self, 'buttonSet2')
+		buttonSet2.add(showButton)
+		otherForm.add(buttonSet2)
+		
+		self.addControl("form", form)
+		self.addControl("otherForm", otherForm)
+		
+	def onUseMenu(self):
 		return True
 
 	# ----------------------------------------------------------------------
 	# Form action methods
-	# ----------------------------------------------------------------------			
-
-	def show(self):
-		self._form.show()
-		self._messageBox.hide()
-		self.redrawForm()
+	# ----------------------------------------------------------------------
+		
+	def test(self):
+		print "In test()"
+		form = self.getExtControl("form")
+		form.retrieve(self.request())
+		form.values["numberField"] = 42.0
+		form.values["textarea"] = ["row1", "row2"]
+		print form.values
+		form.update()
+		self.redraw()
 		
 	def hide(self):
-		self._form.hide()
-		self._messageBox.show()
-		self.redrawForm()
+		print "hide()"
+		form = self.getExtControl("form")
+		form.visible = False
+		
+		otherForm = self.getExtControl("otherForm")
+		otherForm.visible = True
+		
+		self.redraw()
+		
+	def show(self):
+		print "show()"
+		form = self.getExtControl("form")
+		form.visible = True
+		
+		otherForm = self.getExtControl("otherForm")
+		otherForm.visible = False
+		
+		self.redraw()

@@ -22,7 +22,7 @@
 
 from Web.ApplicationSecurePage import ApplicationSecurePage
 
-import Web.Dialogs
+import Web.UiExt
 
 class LoginPageDummy(ApplicationSecurePage):
 	"""Page that is used to initiate a login.
@@ -34,10 +34,15 @@ class LoginPageDummy(ApplicationSecurePage):
 	def title(self):
 		"""Return page title."""
 		return 'Logged in'
+	
+	def onInit(self, adapterName):
+		messageBox = Web.UiExt.MessageBox(self, 'messageBox')
+		messageBox.message = "You have been logged in."
+		messageBox.URL = self.expandPageLoc("SecureWelcomePage")
+		
+		self.addExtControl("messageBox", messageBox)
 
 	def writeContent(self):
 		"""Render page HTML."""
 		
-		adapterName = self.request().adapterName()		
-		Web.Dialogs.messageBox(self, "You have been logged in.", "Information", "%s/context/SecureWelcomePage" % adapterName)
-
+		pass

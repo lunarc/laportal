@@ -1,7 +1,7 @@
 #
 # DefaultPage base class module
 #
-# Copyright (C) 2006 Jonas Lindemann
+# Copyright (C) 2007 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,6 +55,9 @@ class DefaultPage(Page, FieldValidationMixin):
 		classParts2 = classParts[1].split(".")
 		return classParts2[len(classParts2)-1]
 	
+	def expandPageLoc(self, pageName):
+		return "%s/%s/%s" % (self.request().adapterName(), LapSite.Application["ContextName"], pageName)
+	
 	def getProperty(self, key):
 		"""Return the value of the session property 'key'. If not
 		found the function returns None."""
@@ -84,14 +87,26 @@ class DefaultPage(Page, FieldValidationMixin):
 			return None
 		
 	def addExtControl(self, name, extControl):
-		self._extControls.add(extControl)
-		self._extControlDict[name] = extControl
+		self.__extControls.add(extControl)
+		self.__extControlDict[name] = extControl
+		
+	def addControl(self, name, control):
+		self.addExtControl(name, control)
 		
 	def getExtControl(self, name):
-		if self._extControlDict.has_key(name):
-			return self._extControlDict[name]
+		if self.__extControlDict.has_key(name):
+			return self.__extControlDict[name]
 		else:
 			return None
+		
+	def getControl(self, name):
+		return self.getExtControl(name)
+		
+	def hasExtControls(self):
+		return self.__extControls.controlCount>0
+	
+	def hasControls(self):
+		return self.hasExtControls()
 
 	# ----------------------------------------------------------------------
 	# Methods
@@ -170,7 +185,7 @@ class DefaultPage(Page, FieldValidationMixin):
 	# ----------------------------------------------------------------------
 	
 	def actions(self):
-		return Page.actions(self) + self._extControls.actions
+		return Page.actions(self) + self.__extControls.actions
 	
 	def awake(self, transaction):
 		"""Servlet wake-up initialisation
@@ -184,6 +199,8 @@ class DefaultPage(Page, FieldValidationMixin):
 		
 		self.menuBar = Ui.MenuBar(self, self.pageLoc())
 		
+		self.__toolbar = UiExt.Toolbar(self, 'lapToolbar')
+		
 		if self.onUseAlternateMenu():
 			self.menuBar.enableAlternateMenu()
 		else:
@@ -192,10 +209,16 @@ class DefaultPage(Page, FieldValidationMixin):
 		self.menuBar.setPosition(0,90)
 		self.menuBar.setFullWidth(True)
 		
-		self._extControls = UiExt.Container(self)
-		self._extControlDict = {}
+		self.__extControls = UiExt.Container(self)
+		self.__extControlDict = {}
+		
+		# Add menu bar as a special non renderable object to
+		# the ExtJS container object
+		
+		self.__extControls.addSystem(self.__toolbar)
 
 		self.onInitMenu(self.menuBar, self.adapterName)
+		self.onInitToolbar(self.__toolbar, self.adapterName)
 		self.onInit(self.adapterName)
 		
 	def writeBody(self):
@@ -227,11 +250,6 @@ class DefaultPage(Page, FieldValidationMixin):
 		onAdditionalCSS(), onIncludeMenuJavaScript().
 		"""
 		
-		if self.onIncludeMenuCSS():
-			if self.onUseAlternateMenu():
-				pass
-			else:
-				self.writeln(LINK(rel="stylesheet",href=self.pageLoc()+"/transmenu/transmenu.css"))
 		if self.onIncludeLapCSS():
 			self.writeln(LINK(rel="stylesheet",href=self.pageLoc()+"/css/lap.css"))
 		if self.onIncludeUiCSS():
@@ -242,26 +260,17 @@ class DefaultPage(Page, FieldValidationMixin):
 		for css in extraCSS:
 			self.writeln(LINK(rel="stylesheet",href=self.pageLoc()+css))
 
-		if self.onIncludeMenuJavaScript():
-			self.menuBar.renderJavaScript()
-			
 		if self.onIncludeAdditionalJavaScript():
 			self.writeln(self.onGetAdditionalJavaScript())
 			
-		#<link rel="stylesheet" type="text/css" href="../../resources/css/ext-all.css" />
-		#<script type="text/javascript" src="../../adapter/yui/yui-utilities.js"></script>
-		#<script type="text/javascript" src="../../adapter/yui/ext-yui-adapter.js"></script>
-		#<script type="text/javascript" src="../../ext-all.js"></script>
-			
 		if self.onUseExtJS():
-			#self.writeln('<LINK rel="stylesheet",href="'+self.pageLoc()+'/ext/resources/css/ext-all.css"/>')
 			self.writeln(LINK(rel="stylesheet",href=self.pageLoc()+"/ext/resources/css/ext-all.css"))
 			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/adapter/ext/ext-base.js"))
 			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/ext-all.js"))
 			
 		if self.onUseExtJS():
 			"""Render code needed for the ExtJS controls."""
-			self.writeln(SCRIPT(self._extControls.renderJSToString(), type="text/javascript"))
+			self.writeln(SCRIPT(self.__extControls.renderJSToString(), type="text/javascript"))
 		
 	def htBodyArgs(self):
 		"""Provide body arguments for the page
@@ -269,53 +278,39 @@ class DefaultPage(Page, FieldValidationMixin):
 		if onUseMenu() returns True, routines for initialising the menubar
 		is added in the body arguments.
 		"""
-		if self.onUseMenu():
-			if self.onUseAlternateMenu():
-				return 'color=black bgcolor=white onload="initjsDOMenu()"'
-			else:
-				return 'color=black bgcolor=white onload="init()"'
-		else:
-			return 'color=black bgcolor=white'
+		return 'color=black bgcolor=white'
 		
 	def writeBodyParts(self):
 		"""Write the body parts of the page
 		
 		Writes the different parts of the portal page. Several routines
 		"""
-
-		if self.onUseLogo():
-			logoImage = LapSite.Appearance["LogoImage"]
-			logoImageWidth = LapSite.Appearance["LogoImageWidth"]
-			logoImageHeight = LapSite.Appearance["LogoImageHeight"]
-	
-			self.writeln(IMG(src="%s/%s" % (self.pageLoc(), logoImage),
-				style="position:absolute; left:0px; top:0px; width: %s; height: %s;"
-				% (logoImageWidth, logoImageHeight)))
-			
 		if self.onUseMenu():
-		
-			if self.onUseAlternateMenu():
-				self.menuBar.enableAlternateMenu()
-			else:
-				self.menuBar.disableAlternateMenu()
-		
-			self.menuBar.render()	
-			self.menuBar.renderBodyJavaScript()
+			self.__toolbar.render()
 
 		if self.onUseContentDiv():
 			contentDivId = self.onGetContentDivId()
 		
 			self.writeln('<DIV id="%s">' % contentDivId)
+			#self.writeln('<DIV>')
 			if self.onUseExtJS():
 				print "Rendering EXT controls."
-				self._extControls.render()
+				self.onBeforeRender(self.request().adapterName())
+				self.__extControls.render()
+				self.onAfterRender(self.request().adapterName())
+				if not self.hasExtControls():
+					self.writeContent()
 			else:
 				self.writeContent()
-			self.writeln('</DIV>')
+			#self.writeln('</DIV>')
 		else:
 			if self.onUseExtJS():
 				print "Rendering EXT controls."
-				self._extControls.render()
+				self.onBeforeRender(self.request().adapterName())
+				self.__extControls.render()
+				self.onAfterRender(self.request().adapterName())
+				if not self.hasExtControls():
+					self.writeContent()
 			else:
 				self.writeContent()
 
@@ -335,6 +330,9 @@ class DefaultPage(Page, FieldValidationMixin):
 		"""
 		pass
 	
+	def onInitToolbar(self, toolbar, adapterName):
+		pass
+	
 	def onInit(self, adapterName):
 		"""This function is called when a servlet is woken up.
 		
@@ -342,6 +340,12 @@ class DefaultPage(Page, FieldValidationMixin):
 		operation."""
 		pass
 	
+	def onBeforeRender(self, adapterName):
+		pass
+	
+	def onAfterRender(self, adapterName):
+		pass
+
 	def onUseLogo(self):
 		"""Override to change logo behavior. 
 

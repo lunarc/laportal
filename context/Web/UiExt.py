@@ -103,12 +103,20 @@ class Container(Base):
 	def __init__(self, page=None, name="extcontainer"):
 		Base.__init__(self, page, name)
 		self.__extObjects = []
+		self.__sysObjects = []
 		
 	def add(self, extObject):
 		self.__extObjects.append(extObject)
 		
+	def addSystem(self, extObject):
+		self.__sysObjects.append(extObject)
+		
 	def doSetupJavaScript(self):
 		self.addJS("Ext.onReady(function(){")
+		self.addJS("// System objects")
+		for extObj in self.__sysObjects:
+			self.addJS(extObj.renderJSToString())			
+		self.addJS("// Controls")
 		for extObj in self.__extObjects:
 			self.addJS(extObj.renderJSToString())
 		self.addJS("});")
@@ -133,7 +141,11 @@ class Container(Base):
 				
 		return actions
 	
+	def getControlCount(self):
+		return len(self.__extObjects)
+	
 	actions = property(getActions, None)
+	controlCount = property(getControlCount, None)
 
 class Form(Base):
 	def __init__(self, page = None, name = "Form", renderTarget = "extform"):
@@ -142,7 +154,8 @@ class Form(Base):
 		self.__caption = "My form"
 		self.__labelWidth = 75
 		self.__url = ""
-		self.__width = "400px"
+		self.__width = 400
+		self.__sizeUnit = "px"
 		self.__controls = []
 		self.__actions = []
 		self.__values = {}
@@ -191,6 +204,12 @@ class Form(Base):
 		
 	def getWidth(self):
 		return self.__width
+	
+	def setSizeUnit(self, sizeUnit):
+		self.__sizeUnit = sizeUnit
+		
+	def getSizeUnit(self):
+		return self.__sizeUnit
 	
 	def getActions(self):
 		return self.__actions
@@ -244,7 +263,16 @@ class Form(Base):
 					
 	def doRender(self):
 		form = FORM(id=self.name, klass="x-form", action=self.URL, method="POST", enctype="multipart/form-data")
-		formOuter = DIV(style="width:%s;" % self.__width)
+
+		#position:absolute;
+		#top: 50%;
+		#left: 50%;
+		#width:30em;
+		#height:18em;
+		#margin-top: -9em; /*set to a negative number 1/2 of your height*/
+		#margin-left: -15em; /*set to a negative number 1/2 of your width*/
+		
+		formOuter = DIV(style="width:%d%s;position: absolute;left:50%%;margin-left: -%d%s;" % (self.__width, self.__sizeUnit, self.__width/2, self.__sizeUnit))
 		form.append(formOuter)
 		formOuter.append(DIV(DIV(DIV(klass="x-box-tc"),klass="x-box-tr"),klass="x-box-tl"))
 		formInner = DIV(klass="x-box-mc")
@@ -257,7 +285,7 @@ class Form(Base):
 		for formControl in self.__controls:
 			formLayout.append(formControl.renderToTag())
 			
-		formOuter.append(DIV(DIV(DIV(klass="x-box-bc"),klass="x-box-br"),klass="x-box-bl"))
+		formOuter.append((DIV(DIV(DIV(klass="x-box-bc"),klass="x-box-br"),klass="x-box-bl")))
 		
 		return form
 	
@@ -266,6 +294,7 @@ class Form(Base):
 	labelWidth = property(getLabelWidth, setLabelWidth)
 	URL = property(getURL, setURL)
 	width = property(getWidth, setWidth)
+	sizeUnit = property(getSizeUnit, setSizeUnit)
 	actions = property(getActions, None)
 	values = property(getValues, None)
 	
@@ -310,6 +339,14 @@ class Field(Base, FieldValidationMixin):
 	
 	fieldType = property(getFieldType, setFieldType)
 	value = property(getValue, setValue)
+	
+class Hidden(Field):
+	def __init__(self, page=None, name = "hiddenfield"):
+		Field.__init__(self, page, name)
+		
+	def doRender(self):
+		input = INPUT(type="hidden", name=self.name, id=self.name, value=str(self.value))
+		return input
 	
 class FileField(Field):
 	def __init__(self, page=None, name = "filefield", fieldLabel = "FileField", width = 175, allowBlank = True):
@@ -624,7 +661,10 @@ class Button(Base):
 	
 	def doRender(self):
 		#input = INPUT(type="submit", name=self.actionName, id=self.actionName, value=self.__text, klass="x-btn")
-		input = DIV(INPUT(type="submit", name=self.actionName, id=self.actionName, value=self.__text), style="display:inline;padding-right:1em;")
+		if self.actionEnabled:
+			input = DIV(INPUT(type="submit", name=self.actionName, id=self.actionName, value=self.__text), style="display:inline;padding-right:1em;")
+		else:
+			input = DIV(INPUT(type="submit", name=self.name, id=self.name, value=self.__text), style="display:inline;padding-right:1em;")
 		return input
 	
 	def setText(self, text):
@@ -940,6 +980,317 @@ class Radio(Field):
 
 	fieldLabel = property(getFieldLabel, setFieldLabel)
 	value = property(getValue, setValue)
+	
+class Static(Base):
+	def __init__(self, page, name):
+		Base.__init__(self, page, name = "statictext")
+		self.__text = ""
+		self.__align = "center"
+		
+	def setText(self, text):
+		self.__text = text
+		
+	def getText(self):
+		return self.__text
+	
+	def setAlign(self, align):
+		self.__align = align
+		
+	def getAlign(self):
+		return self.__align
+	
+	def doRender(self):
+		return P(self.__text, style="text-align:%s" % self.__align)
+	
+	text = property(getText, setText)
+	align = property(getAlign, setAlign)
+	
+class Separator(Base):
+	def __init__(self, page, name):
+		Base.__init__(self, page, name = "separator")
+	
+	def doRender(self):
+		return HR(klass="x-form-element")
+	
+class VSpace(Base):
+	def __init__(self, page, name):
+		Base.__init__(self, page, name = "space")
+	
+	def doRender(self):
+		return BR(klass="x-form-element")
+	
+class MessageBox(Form):
+	def __init__(self, page, name):
+		Form.__init__(self, page, name)
+		
+		self.caption = "Information"
+		self.actionEnabled = False
+		
+		self.__message = "Hello, world!"
+		self.__returnPage = ""
+		
+		self.__messageStatic = Static(self, 'loginMessage')
+		self.__messageStatic.text = self.__message
+
+		self.add(VSpace(self, 's1'))
+		self.add(self.__messageStatic)
+		self.add(VSpace(self, 's1'))
+		
+		buttons = ButtonSet(self, 'buttons')
+		self.__okButton = Button(self, 'messageOk', 'Ok')
+		self.__okButton.actionEnabled = False
+		self.__okButton.name = self.__returnPage
+		buttons.add(self.__okButton)
+		
+		self.add(buttons)
+		
+	def setMessage(self, message):
+		self.__message = message
+		self.__messageStatic.text = self.__message
+		
+	def getMessage(self):
+		return self.__message
+	
+	def setReturnPage(self, page):
+		self.__returnPage = page
+		self.name = self.__returnPage
+		
+	def getReturnPage(self):
+		return self.__returnPage
+
+	message = property(getMessage, setMessage)
+	returnPage = property(getReturnPage, setReturnPage)
+	
+class Menu(Base):
+	def __init__(self, page, name):
+		Base.__init__(self, page, name)
+		self.__items = []
+		
+	def clear(self):
+		self.__items = []
+		
+	def add(self, caption, url, target="", features=""):
+		self.__items.append({"caption":caption, "url":url, "target":target, "features":features})
+		
+	def getItems(self):
+		return self.__items
+
+	def doSetupJavaScript(self):
+		#var informationMenu = new Ext.menu.Menu({id: 'informationMenu'})
+		#informationMenu.add({text: 'Getting started...', handler: onGettingStartedClick})
+		#informationMenu.add({text: 'Users guide...'})
+		#informationMenu.add({text: 'Programming guide...'})
+		
+		self.addJS("var %s = new Ext.menu.Menu({id: '%s'});" % (self.id, self.id))
+		
+		for item in self.__items:
+			if item["url"] != "":
+				if item["target"]=="":
+					self.addJS('%s.add({text:"%s", handler: function() {window.location="%s"}});' % (self.id, item["caption"], item["url"]))
+				else:
+					self.addJS('%s.add({text:"%s", handler: function() {window.open("%s", "", "%s")}});' % (self.id, item["caption"], item["url"], item["features"]))					
+			else:
+				self.addJS('%s.add({text:"%s"});' % (self.id, item["caption"]))
+				
+	
+	def doRender(self):
+		pass
+	
+	items = property(getItems, None)
+	
+class Toolbar(Base):
+	def __init__(self, page, name):
+		Base.__init__(self, page, name)
+		
+		self.__menus = []
+		
+	def clear(self):
+		self.__menus = []
+		
+	def add(self, caption, menu):
+		self.__menus.append({"caption":caption, "menu":menu})
+		
+	def getMenus(self):
+		return self.__menus
+		
+	def doSetupJavaScript(self):
+		#var mainMenuToolbar = new Ext.Toolbar('toolbar', {autoHeight:true});
+		#mainMenuToolbar.add({text:'Information', menu: informationMenu });
+		#mainMenuToolbar.add({text:'Session', menu: sessionMenu });
+		#mainMenuToolbar.add({text:'Join', menu: joinMenu });
+		#mainMenuToolbar.add({text:'Settings', menu: settingsMenu });
+		#mainMenuToolbar.add({text:'Create', menu: createMenu });
+		#mainMenuToolbar.add({text:'Manage', menu: manageMenu });
+		#mainMenuToolbar.add({text:'Storage', menu: storageMenu });
+		#mainMenuToolbar.add({text:'About', menu: aboutMenu });
+		
+		# Add menu javascript declarations
+		
+		for item in self.__menus:
+			self.addJS(item["menu"].renderJSToString())
+			
+		# Create toolbar javascript declarations
+		
+		self.addJS("var %s = new Ext.Toolbar('%s');" % (self.id, self.id))
+		
+		for item in self.__menus:
+			self.addJS('%s.add({text:"%s", menu: %s});' % (self.id, item["caption"], item["menu"].name))
+		
+	def doRender(self):
+		return DIV(id=self.id)
+	
+	menus = property(getMenus, None)
+	
+		#var viewport = new Ext.Viewport({layout:'border', items:[
+		#	{region:'north', contentEl: 'north', height: 52, title: 'Lunarc Application Portal', split:true },
+		#	{region:'south', contentEl: 'south', split:true, height: 30, collapsible: true, margins:'0 0 0 0'},
+		#	centerPanel = new Ext.Panel({region:'center', contentEl: 'center1', split:true, margins:'0 0 0 0'}),
+		#	{region:'west', id:'west-panel', split:true, width: 200, minSize: 175, maxSize: 400, collapsible: true, margins:'0 0 0 5', layout:'accordion', layoutConfig:{ animate:true }, items: [
+		#		jobTypePanel = new Ext.Panel({title:'Job types', border:false, iconCls:'nav'}),
+		#		jobDefinitionPanel = new Ext.Panel({title:'Job definitions', border:false, iconCls:'nav'}),
+		#		runningJobPanel = new Ext.Panel({title:'Running jobs', border:false, iconCls:'nav' }),
+		#		storagePanel = new Ext.Panel({title:'Storage', border:false, iconCls:'nav'}),
+		#	]}
+		#]});
+
+	
+class Panel(Base):
+	def __init__(self, page, name):
+		Base.__init__(self, page, name)
+		self.__config = {}
+		self.__items = []
+		
+		self.__config["region"] = None
+		self.__config["contentEl"] = None
+		self.__config["height"] = None
+		self.__config["width"] = None
+		self.__config["title"] = None
+		self.__config["split"] = True
+		self.__config["collapsible"] = None
+		self.__config["margins"] = None
+		self.__config["minSize"] = None
+		self.__config["maxSize"] = None
+		self.__config["border"] = None
+		self.__config["iconCls"] = None
+		self.__config["layout"] = None
+		self.__config["layoutConfig"] = None
+		
+	def doSetupJavaScript(self):
+		pass
+	
+	def setRegion(self, region):
+		self.__config["region"] = region
+		
+	def getRegion(self):
+		return self.__config["region"]
+	
+	def setContentEl(self, contentEl):
+		self.__contentEl = contentEl
+		
+	def getContentEl(self):
+		return self.__contentEl
+	
+	def setHeight(self, height):
+		self.__config["height"] = height
+		
+	def getHeight(self):
+		return self.__config["height"]
+	
+	def setWidth(self, width):
+		self.__config["width"] = width
+		
+	def getWidth(self):
+		return self.__config["width"]
+	
+	def setTitle(self, title):
+		self.__config["title"] = title
+		
+	def getTitle(self):
+		return self.__config["title"]
+
+	def setSplit(self, split):
+		self.__config["split"] = split
+		
+	def getSplit(self):
+		return self.__config["split"]
+
+	def setCollapsible(self, collapsible):
+		self.__config["collapsible"] = collapsible
+		
+	def getCollapsible(self):
+		return self.__config["collapsible"]
+
+	def setMargins(self, margins):
+		self.__config["margins"] = margins
+		
+	def getMargins(self):
+		return self.__config["minSize"]
+
+	def setMinSize(self, minSize):
+		self.__config["minSize"] = minSize
+		
+	def getMinSize(self):
+		return self.__config["minSize"]
+
+	def setMaxSize(self, maxSize):
+		self.__config["maxSize"] = maxSize
+		
+	def getMaxSize(self):
+		return self.__config["maxSize"]
+
+	def setBorder(self, border):
+		self.__config["border"] = border
+		
+	def getBorder(self):
+		return self.__config["border"]
+
+	def setIconCls(self, iconCls):
+		self.__config["iconCls"] = iconCls
+		
+	def getIconCls(self):
+		return self.__config["iconCls"]
+
+	def setLayout(self, layout):
+		self.__config["layout"] = layout
+		
+	def getLayout(self):
+		return self.__config["layout"]
+
+	def setLayoutConfig(self, layoutConfig):
+		self.__config["layoutConfig"] = layoutConfig
+		
+	def getLayoutConfig(self):
+		return self.__config["layoutConfig"]
+
+	region = property(getRegion, setRegion)
+	contentEl = property(getContentEl, setContentEl)
+	height = property(getHeight, setHeight)
+	width = property(getWidth, setWidth)
+	title = property(getTitle, setTitle)
+	split = property(getSplit, setSplit)
+	collapsible = property(getCollapsible, setCollapsible)
+	margins = property(getMargins, setMargins)
+	minSize = property(getMinSize, setMinSize)
+	maxSize = property(getMaxSize, setMaxSize)
+	border = property(getBorder, setBorder)
+	iconCls = property(getIconCls, setIconCls)
+	layout = property(getLayout, setLayout)
+	layoutConfig = property(getLayoutConfig, setLayoutConfig)
+	
+	
+class Viewport(Base):
+	def __init__(self, page, name):
+		Base.__init__(self, page, name)
+		
+		self.__panels = []
+	
+	def doSetupJavaScript(self):
+		pass
+	
+	def getPanels(self):
+		return self.__panels
+	
+	panels = property(getPanels, None)
 
 if __name__ == "__main__":
 

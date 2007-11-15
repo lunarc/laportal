@@ -26,6 +26,7 @@ from HyperText.HTML import *
 from Web.DefaultPage import DefaultPage
 
 import Web.Ui
+import Web.UiExt
 import Lap.Version
 
 import LapSite
@@ -170,4 +171,48 @@ class ApplicationPage(DefaultPage):
 		menuBar.addMenu(menuInfo)
 		menuBar.addMenu(menuSession)
 		menuBar.addMenu(menuAbout)
+		
+	def onInitToolbar(self, toolbar, adapterName):
+		
+		# Create a menu
+		
+		#menu1 = Web.UiExt.Menu(self, 'menu1')
+		#menu1.add('Menu1 item 1', 'LoginPage')
+		#menu1.add('Menu1 item 2', '')
+		#
+		#menu2 = Web.UiExt.Menu(self, 'menu2')
+		#menu2.add('Menu2 item 1', '')
+		#menu2.add('Menu2 item 2', '')
+		
+		menuSession = Web.UiExt.Menu(self, "menuSession")
+		menuSession.add("Log in...", self.pageLoc()+"/LoginPageDummy")
+
+		menuAbout = Web.UiExt.Menu(self, "menuAbout")
+		menuAbout.add("LUNARC...",self.pageLoc()+"/WelcomePage")
+		menuAbout.add("Portal...",self.pageLoc()+"/WelcomePage")
+		
+		menuInfo = Web.UiExt.Menu(self, "menuInfo")
+
+		docPluginList = self._findDocPlugins()
+
+		for plugin in docPluginList:
+			pluginName = plugin[0]
+			pluginDir = plugin[1]
+			pluginDescr = plugin[2]
+			pluginOrder = plugin[3]
+			pluginWidth = plugin[4]
+			pluginHeight = plugin[5]
+			pluginDocType = plugin[6]
+			if pluginDocType == "html":
+				menuInfo.add("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomDocPage" % (pluginName), "_blank",
+							 "width=%d,height=%d,location=no,menubar=no,toolbar=yes,scrollbars=yes,resizable=yes" %
+							 (pluginWidth, pluginHeight))
+			else:
+				menuInfo.add("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomDocViewPage" % (pluginName), "_blank",
+							 "width=%d,height=%d,location=no,menubar=no,toolbar=no,scrollbars=yes,resizable=yes" % (pluginWidth, pluginHeight))
+						
+		toolbar.add('Information', menuInfo)
+		toolbar.add('Session', menuSession)
+		toolbar.add('About', menuAbout)
+		
 		
