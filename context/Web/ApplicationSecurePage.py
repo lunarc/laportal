@@ -333,7 +333,7 @@ class ApplicationSecurePage(SecurePage):
 		toolbar.add("Information", menuInfo)
 		toolbar.add("Session", menuSession)
 		toolbar.add("Join", menuJoin)
-		toolbar.add("Preferencese", menuPreferences)
+		toolbar.add("Preferences", menuPreferences)
 		toolbar.add("Create", menuCreate)
 		toolbar.add("Manage", menuManage)
 		toolbar.add("Storage", menuStorage)

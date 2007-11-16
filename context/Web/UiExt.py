@@ -1175,8 +1175,30 @@ class Panel(Base):
 		self.__config["layout"] = None
 		self.__config["layoutConfig"] = None
 		
+	def add(self, panel):
+		self.__items.append(panel)
+		
 	def doSetupJavaScript(self):
-		pass
+		self.addJS("%s = new Ext.Panel(%s);" % (self.name, self.configString))
+		if len(self.__items)>0:
+			for extObj in self.__items:
+				self.addJS(extObj.renderJSToString())
+				self.addJS("%s.add(%s);" % (self.name, extObj.name))
+	
+	def getConfigString(self):
+		
+		optionList = []
+		
+		for key in self.__config.keys():
+			if self.__config[key]!=None:
+				if key=='height' or key=='width' or key=='minSize' or key=='maxSize' or key=="split" or key=="collapsible" or key=="border":
+					optionList.append("%s: %s" % (key, str(self.__config[key])))
+				else:
+					optionList.append("%s: '%s'" % (key, str(self.__config[key])))
+				
+		configString = ', '.join(optionList)
+		
+		return "{ "+configString+" }"
 	
 	def setRegion(self, region):
 		self.__config["region"] = region
@@ -1276,6 +1298,7 @@ class Panel(Base):
 	iconCls = property(getIconCls, setIconCls)
 	layout = property(getLayout, setLayout)
 	layoutConfig = property(getLayoutConfig, setLayoutConfig)
+	configString = property(getConfigString, None)
 	
 	
 class Viewport(Base):
@@ -1283,14 +1306,38 @@ class Viewport(Base):
 		Base.__init__(self, page, name)
 		
 		self.__panels = []
+		self.__layout = "border"
+		
+	def add(self, panel):
+		self.__panels.append(panel)
 	
 	def doSetupJavaScript(self):
-		pass
+		
+		for extObj in self.__panels:
+			self.addJS(extObj.renderJSToString())
+		
+		self.addJS("%s = new Ext.Viewport({layout: %s, items: [" % (self.name, self.layout))
+		i = 1
+		if len(self.__panels)>0:
+			for extObj in self.__panels:
+				if i!=len(self.__panels):
+					self.addJS("%s," % (extObj.name))
+				else:
+					self.addJS("%s" % (extObj.name))
+		self.addJS("]});")
+
 	
 	def getPanels(self):
 		return self.__panels
 	
+	def setLayout(self, layout):
+		self.__layout = layout
+		
+	def getLayout(self):
+		return self.__layout
+	
 	panels = property(getPanels, None)
+	layout = property(getLayout, setLayout)
 
 if __name__ == "__main__":
 

@@ -168,8 +168,23 @@ class MenuTestPage(ApplicationPage):
 		buttonSet2.add(showButton)
 		otherForm.add(buttonSet2)
 		
+		panel1 = Web.UiExt.Panel(self, 'panel1')
+		panel1.region = 'center'
+		panel1.contentEl = 'center1'
+		panel1.margins = '0 0 0 0'
+		
+		panel2 = Web.UiExt.Panel(self, 'panel2')
+		panel2.region = 'center'
+		panel2.contentEl = 'center1'
+		panel2.margins = '0 0 0 0'
+		
+		viewport = Web.UiExt.Viewport(self, 'viewport')
+		viewport.add(panel1)
+		viewport.add(panel2)
+		
 		self.addControl("form", form)
 		self.addControl("otherForm", otherForm)
+		self.addControl("viewport", viewport)
 		
 	def onUseMenu(self):
 		return True
