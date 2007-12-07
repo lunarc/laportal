@@ -1,6 +1,13 @@
 
 /* ----- General layout ---- */
 
+.settings {
+	background-image:url(/ext/examples/shared/icons/fam/folder_wrench.png);
+}
+.nav {
+	background-image:url(/ext/examples/shared/icons/fam/folder_go.png);
+}
+
 body {
 	padding-left: 0em;
 	font-family: Tahoma, Georgia, "Times New Roman", Times, serif;

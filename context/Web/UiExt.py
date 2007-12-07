@@ -1175,6 +1175,8 @@ class Panel(Base):
 		self.__config["layout"] = None
 		self.__config["layoutConfig"] = None
 		
+		self.__animate = False
+	
 	def add(self, panel):
 		self.__items.append(panel)
 		
@@ -1184,15 +1186,29 @@ class Panel(Base):
 			for extObj in self.__items:
 				self.addJS(extObj.renderJSToString())
 				self.addJS("%s.add(%s);" % (self.name, extObj.name))
-	
+				
+	def doRender(self):
+		contentEl = DIV(id=self.contentEl)
+		
+		for extObj in self.__items:
+			contentEl.append(extObj.renderToTag())
+			
+		return contentEl
+
 	def getConfigString(self):
 		
 		optionList = []
 		
+		if self.__config["layoutConfig"] == None:
+			if self.__animate:
+				self.__config["layoutConfig"] = "{ animate:true }"
+			else:
+				self.__config["layoutConfig"] = None
+		
 		for key in self.__config.keys():
 			if self.__config[key]!=None:
-				if key=='height' or key=='width' or key=='minSize' or key=='maxSize' or key=="split" or key=="collapsible" or key=="border":
-					optionList.append("%s: %s" % (key, str(self.__config[key])))
+				if key=='height' or key=='width' or key=='minSize' or key=='maxSize' or key=="split" or key=="collapsible" or key=="border" or key=="layoutConfig":
+					optionList.append("%s: %s" % (key, str(self.__config[key]).lower()))
 				else:
 					optionList.append("%s: '%s'" % (key, str(self.__config[key])))
 				
@@ -1207,10 +1223,10 @@ class Panel(Base):
 		return self.__config["region"]
 	
 	def setContentEl(self, contentEl):
-		self.__contentEl = contentEl
+		self.__config["contentEl"] = contentEl
 		
 	def getContentEl(self):
-		return self.__contentEl
+		return self.__config["contentEl"]
 	
 	def setHeight(self, height):
 		self.__config["height"] = height
@@ -1246,7 +1262,7 @@ class Panel(Base):
 		self.__config["margins"] = margins
 		
 	def getMargins(self):
-		return self.__config["minSize"]
+		return self.__config["margins"]
 
 	def setMinSize(self, minSize):
 		self.__config["minSize"] = minSize
@@ -1283,7 +1299,13 @@ class Panel(Base):
 		
 	def getLayoutConfig(self):
 		return self.__config["layoutConfig"]
-
+	
+	def setAnimate(self, flag):
+		self.__animate = flag
+		
+	def getAnimate(self):
+		return self.__animate
+	
 	region = property(getRegion, setRegion)
 	contentEl = property(getContentEl, setContentEl)
 	height = property(getHeight, setHeight)
@@ -1299,7 +1321,7 @@ class Panel(Base):
 	layout = property(getLayout, setLayout)
 	layoutConfig = property(getLayoutConfig, setLayoutConfig)
 	configString = property(getConfigString, None)
-	
+	animate = property(getAnimate, setAnimate)
 	
 class Viewport(Base):
 	def __init__(self, page, name):
@@ -1316,7 +1338,7 @@ class Viewport(Base):
 		for extObj in self.__panels:
 			self.addJS(extObj.renderJSToString())
 		
-		self.addJS("%s = new Ext.Viewport({layout: %s, items: [" % (self.name, self.layout))
+		self.addJS("%s = new Ext.Viewport({layout: '%s', items: [" % (self.name, self.layout))
 		i = 1
 		if len(self.__panels)>0:
 			for extObj in self.__panels:
@@ -1325,8 +1347,15 @@ class Viewport(Base):
 				else:
 					self.addJS("%s" % (extObj.name))
 		self.addJS("]});")
+		
+	def doRender(self):
+		tag = DIV()
 
-	
+		for extObj in self.__panels:
+			tag.append(extObj.renderToTag())
+			
+		return tag
+		
 	def getPanels(self):
 		return self.__panels
 	

@@ -196,29 +196,60 @@ class DefaultPage(Page, FieldValidationMixin):
 		Page.awake(self, transaction)
 
 		self.adapterName = self.request().adapterName()
-		
-		self.menuBar = Ui.MenuBar(self, self.pageLoc())
-		
-		self.__toolbar = UiExt.Toolbar(self, 'lapToolbar')
-		
-		if self.onUseAlternateMenu():
-			self.menuBar.enableAlternateMenu()
-		else:
-			self.menuBar.disableAlternateMenu()
-			
-		self.menuBar.setPosition(0,90)
-		self.menuBar.setFullWidth(True)
-		
+	
+	
 		self.__extControls = UiExt.Container(self)
 		self.__extControlDict = {}
 		
+		# northPanel = new Ext.Panel({region:'north', contentEl: 'north', height: 52, title: 'Lunarc Application Portal', split:true });
+		
+		self.__topPanel = UiExt.Panel(self, 'topPanel')
+		self.__topPanel.region = "north"
+		self.__topPanel.contentEl = "topPanel"
+		self.__topPanel.height = 52
+		self.__topPanel.title = "Lunarc Application Portal"
+		
+		self.__mainPanel = UiExt.Panel(self, 'mainPanel')
+		self.__mainPanel.region = "center"
+		self.__mainPanel.contentEl = "mainPanel"
+		
+		# westPanel = new Ext.Panel({region:'west', id:'west-panel', split:true, width: 200, minSize: 175, maxSize: 400, collapsible: true, margins:'0 0 0 5', layout:'accordion', layoutConfig:{ animate:true }});
+		
+		self.__appPanel = UiExt.Panel(self, 'appPanel')
+		self.__appPanel.region = "west"
+		self.__appPanel.contentEl = "appPanel"
+		self.__appPanel.width = 200
+		self.__appPanel.maxSize = 400
+		self.__appPanel.minSize = 200
+		self.__appPanel.collapsible = True
+		self.__appPanel.layout = 'accordion'
+		self.__appPanel.animate = True
+		
+		# jobTypePanel = new Ext.Panel({title:'Job types', border:false, iconCls:'nav'});
+
+		# southPanel = new Ext.Panel({region:'south', contentEl: 'south', split:true, height: 30, collapsible: true, margins:'0 0 0 0'});
+		
+		self.__bottomPanel = UiExt.Panel(self, 'bottomPanel')
+		self.__bottomPanel.region = "south"
+		self.__bottomPanel.contentEl = "bottomPanel"
+		self.__bottomPanel.height = 30
+		
+		self.__viewport = UiExt.Viewport(self, 'viewport')
+		self.__viewport.add(self.__topPanel)
+		self.__viewport.add(self.__mainPanel)
+		self.__viewport.add(self.__appPanel)
+		self.__viewport.add(self.__bottomPanel)
+		
+		self.__toolbar = UiExt.Toolbar(self, 'lapToolbar')
+
 		# Add menu bar as a special non renderable object to
 		# the ExtJS container object
 		
 		self.__extControls.addSystem(self.__toolbar)
+		self.__extControls.addSystem(self.__viewport)
 
-		self.onInitMenu(self.menuBar, self.adapterName)
 		self.onInitToolbar(self.__toolbar, self.adapterName)
+		self.onInitAppPanel(self.__appPanel, self.adapterName)
 		self.onInit(self.adapterName)
 		
 	def writeBody(self):
@@ -285,14 +316,8 @@ class DefaultPage(Page, FieldValidationMixin):
 		
 		Writes the different parts of the portal page. Several routines
 		"""
-		if self.onUseMenu():
-			self.__toolbar.render()
-
 		if self.onUseContentDiv():
-			contentDivId = self.onGetContentDivId()
-		
-			self.writeln('<DIV id="%s">' % contentDivId)
-			#self.writeln('<DIV>')
+			self.writeln('<DIV id="%s" style="padding: 20px 20px 20px 20px;">' % "mainPanel")
 			if self.onUseExtJS():
 				print "Rendering EXT controls."
 				self.onBeforeRender(self.request().adapterName())
@@ -302,7 +327,15 @@ class DefaultPage(Page, FieldValidationMixin):
 					self.writeContent()
 			else:
 				self.writeContent()
-			#self.writeln('</DIV>')
+			self.writeln('</DIV>')
+			self.writeln('<DIV id="%s">' % "topPanel")
+			if self.onUseMenu():
+				self.__toolbar.render()
+			self.writeln('</DIV>')
+			
+			self.__appPanel.render()
+			
+			self.writeln('<DIV id="%s"><CENTER>Lunarc Application Portal 1.0</CENTER></DIV>' % "bottomPanel")
 		else:
 			if self.onUseExtJS():
 				print "Rendering EXT controls."
@@ -316,7 +349,6 @@ class DefaultPage(Page, FieldValidationMixin):
 
 			
 		if self.onUseTooltips():
-			
 			self.writeln(Ui.tooltipJavaScript)
 			
 	# ----------------------------------------------------------------------
@@ -328,6 +360,9 @@ class DefaultPage(Page, FieldValidationMixin):
 
 		Use the menuBar instance to fill the menu with menus.
 		"""
+		pass
+	
+	def onInitAppPanel(self, appPanel, adapterName):
 		pass
 	
 	def onInitToolbar(self, toolbar, adapterName):
@@ -366,7 +401,7 @@ class DefaultPage(Page, FieldValidationMixin):
 	
 	def onGetContentDivId(self):
 		"""Return name of content div. Default "workarea"."""
-		return "workarea"
+		return "centerPanel"
 	
 	def onUseContentDiv(self):
 		"""Override to change content div usage. 
