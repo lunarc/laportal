@@ -1176,7 +1176,7 @@ class Panel(Base):
 		self.__config["layoutConfig"] = None
 		
 		self.__animate = False
-	
+
 	def add(self, panel):
 		self.__items.append(panel)
 		
@@ -1306,6 +1306,9 @@ class Panel(Base):
 	def getAnimate(self):
 		return self.__animate
 	
+	def getConfigDict(self):
+		return self.__config
+	
 	region = property(getRegion, setRegion)
 	contentEl = property(getContentEl, setContentEl)
 	height = property(getHeight, setHeight)
@@ -1322,6 +1325,7 @@ class Panel(Base):
 	layoutConfig = property(getLayoutConfig, setLayoutConfig)
 	configString = property(getConfigString, None)
 	animate = property(getAnimate, setAnimate)
+	configDict = property(getConfigDict, None)
 	
 class Viewport(Base):
 	def __init__(self, page, name):
@@ -1367,6 +1371,137 @@ class Viewport(Base):
 	
 	panels = property(getPanels, None)
 	layout = property(getLayout, setLayout)
+	
+class TreePanel(Base):
+	def __init__(self, page, name):
+		Base.__init__(self, page, name)
+		
+		self.__config = {}
+		self.__items = []
+
+		self.__dataUrl = ""
+		self.__contentEl = ""
+		
+		self.__config["el"] = None
+		self.__config["autoScroll"] = True
+		self.__config["animate"] = True
+		self.__config["enableDD"] = None
+		self.__config["containerScroll"] = True
+		self.__config["title"] = ""
+		self.__config["rootVisible"] = False
+		self.__config["loader"] = 'new Ext.tree.TreeLoader({dataUrl:"%s"})' % self.__dataUrl
+		
+	def getConfigString(self):
+		
+		optionList = []
+		
+		for key in self.__config.keys():
+			if self.__config[key]!=None:
+				if key=='autoScroll' or key=='animate' or key=='enableDD' or key=='containerScroll' or key=="rootVisible":
+					optionList.append("%s: %s" % (key, str(self.__config[key]).lower()))
+				elif key=='loader' or key == "click":
+					optionList.append("%s: %s" % (key, str(self.__config[key])))					
+				else:
+					optionList.append("%s: '%s'" % (key, str(self.__config[key])))
+				
+		configString = ', '.join(optionList)
+		
+		return "{ "+configString+" }"
+	
+	def doSetupJavaScript(self):
+		#var tree = new Tree.TreePanel({
+		#	el:'tree',
+		#	animate:true,
+		#	autoScroll:true,
+		#	loader: new Tree.TreeLoader({dataUrl:'get-nodes.php'}),
+		#	enableDD:true,
+		#	containerScroll: true,
+		#	dropConfig: {appendOnly:true}
+		#});
+		#// set the root node
+		#var root = new Tree.AsyncTreeNode({
+		#    text: 'Ext JS',
+		#    draggable:false, // disable root node dragging
+		#    id:'source'
+		#});
+		#tree.setRootNode(root);
+		#
+		#// render the tree
+		#tree.render();
+		#
+		#root.expand(false, /*no anim*/ false);
+
+		self.addJS("%s = new Ext.tree.TreePanel(%s);" % (self.name, self.configString))
+		self.addJS("var root%s = new Ext.tree.AsyncTreeNode({text:'Test', draggable: false, id:'source'});" % (self.name))
+		self.addJS("%s.on('click', function(node, e) {window.location = node.attributes.url;});" % (self.name))
+		self.addJS("%s.setRootNode(root%s);" % (self.name, self.name))
+		#self.addJS("%s.render();" % (self.name))
+		self.addJS("%s.expandAll();" % (self.name))
+				
+	#def doRender(self):
+	#	contentEl = DIV(id=self.contentEl)
+	#	return contentEl		
+	
+	def setElementId(self, id):
+		self.__config["el"] = id
+		
+	def getElementId(self):
+		return self.__config["el"]
+	
+	def setAutoScroll(self, flag):
+		self.__config["autoScroll"] = flag
+		
+	def getAutoScroll(self):
+		return self.__config["autoScroll"]
+	
+	def setAnimate(self, flag):
+		self.__config["animate"] = flag
+		
+	def getAnimate(self):
+		return self.__config["animate"]
+	
+	def setEnableDD(self, flag):
+		self.__config["enableDD"] = flag
+		
+	def getEnableDD(self):
+		return self.__config["enableDD"]
+	
+	def setContainerScroll(self, flag):
+		self.__config["containerScroll"] = flag
+		
+	def getContainerScroll(self):
+		return self.__config["containerScroll"]
+	
+	def setDataUrl(self, url):
+		self.__dataUrl = url
+		self.__config["loader"] = 'new Ext.tree.TreeLoader({dataUrl:"%s"})' % (self.__dataUrl)
+		
+	def getDataUrl(self):
+		return self.__dataUrl
+	
+	def setTitle(self, title):
+		self.__config["title"] = title
+		
+	def getTitle(self):
+		return self.__config["title"]
+	
+	def setRootVisible(self, flag):
+		self.__config["rootVisible"] = flag
+		
+	def getRootVisible(self):
+		return self.__config["rootVisible"]
+	
+	configString = property(getConfigString, None)
+	elementId = property(getElementId, setElementId)
+	contentEl = property(getElementId, setElementId)
+	autoScroll = property(getAutoScroll, setAutoScroll)
+	animate = property(getAnimate, setAnimate)
+	enableDD = property(getEnableDD, setEnableDD)
+	containerScroll = property(getContainerScroll, setContainerScroll)
+	dataUrl = property(getDataUrl, setDataUrl)
+	title = property(getTitle, setTitle)
+	rootVisible = property(getRootVisible, setRootVisible)
+		
 
 if __name__ == "__main__":
 
