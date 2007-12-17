@@ -355,13 +355,6 @@ class DefaultPage(Page, FieldValidationMixin):
 	# DefaultPage Event methods (Callbacks)
 	# ----------------------------------------------------------------------						
 			
-	def onInitMenu(self, menuBar, adapterName):
-		"""This function is called when the menuBar is created.
-
-		Use the menuBar instance to fill the menu with menus.
-		"""
-		pass
-	
 	def onInitAppPanel(self, appPanel, adapterName):
 		pass
 	

@@ -27,14 +27,16 @@ from threading import Lock
 
 global lapLogger
 
-class LapLogger:
+class LapLogger(object):
     """ LAP Logger """
 
     __instance = None
+    __logStdOut = True
 
     def __init__(self):
         """ Create singleton instance """
         # Check whether we already have an instance
+              
         if LapLogger.__instance is None:
             # Create and remember instance
 			
@@ -72,29 +74,42 @@ class LapLogger:
     def __setattr__(self, attr, value):
         """ Delegate access to implementation """
         return setattr(self.__instance, attr, value)
+    
+    def getLogStdOut(self):
+        return self.__logStdOut
+    
+    def setLogStdOut(self, flag):
+        self.__logStdOut = flag
+    
+    logStdOut = property(getLogStdOut, setLogStdOut)
 
 
 def lapDebug(message):
 	"""Log a debug message to LAP log file."""
 	logger=LapLogger()
 	logger.debug(message)
+	print "DEBUG:   "+message
 	
 def lapInfo(message):
 	"""Log an informational message to the LAP log file."""
 	logger=LapLogger()
 	logger.info(message)
+	print "INFO:    "+message
 
 def lapWarning(message):
 	"""Log a warning message to the LAP log file."""
 	logger=LapLogger()
 	logger.warning(message)
+	print "WARNING: "+message
 
 def lapError(message):
 	"""Log an error message to the LAP log file."""
 	logger=LapLogger()
 	logger.error(message)
+	print "ERROR:   "+message
 	
 def lapCritical(message):
 	"""Log a critical message to the LAP log file."""
 	logger=LapLogger()
 	logger.critical(message)
+	print "CRITICAL:"+message

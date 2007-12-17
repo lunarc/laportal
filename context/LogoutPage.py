@@ -39,8 +39,6 @@ class LogoutPage(ApplicationPage):
 		messageBox.message = "You have been logged out."
 		messageBox.URL = self.expandPageLoc("WelcomePage")
 		self.addExtControl("messageBox", messageBox)
-
-	def writeContent(self):
-		"""Render page HTML."""
 		
+	def onAfterRender(self, adapterName):
 		self.session().invalidate()

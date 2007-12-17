@@ -264,19 +264,20 @@ class ApplicationSecurePage(SecurePage):
 	
 	def onInitAppPanel(self, appPanel, adapterName):
 		
-		jobPluginPanel = Web.UiExt.TreePanel(self, "jobPluginPanel")
-		jobPluginPanel.dataUrl = self.pageLoc()+"/JsonPluginList"
-		jobPluginPanel.title = "Job Plugins"
-		jobPluginPanel.animate = False
-		jobPluginPanel.rootVisible = False
-		appPanel.add(jobPluginPanel)
+		jobPanel = Web.UiExt.TreePanel(self, "jobPanel")
+		jobPanel.addDataUrl(self.pageLoc()+"/JsonPluginList", "Plugins")
+		jobPanel.addDataUrl(self.pageLoc()+"/JsonJobList", "Job definitions")
+		jobPanel.title = "Jobs"
+		jobPanel.animate = False
+		jobPanel.rootVisible = False
+		appPanel.add(jobPanel)
 		
-		jobDefinitionPanel = Web.UiExt.TreePanel(self, "jobDefinitionPanel")
-		jobDefinitionPanel.dataUrl = self.pageLoc()+"/JsonJobList"
-		jobDefinitionPanel.title = "Job Definitions"
-		jobDefinitionPanel.animate = False
-		jobDefinitionPanel.rootVisible = False
-		appPanel.add(jobDefinitionPanel)
+		runningJobPanel = Web.UiExt.TreePanel(self, "runningJobPanel")
+		runningJobPanel.dataUrl = self.pageLoc()+"/JsonJobList"
+		runningJobPanel.title = "Running jobs"
+		runningJobPanel.animate = False
+		runningJobPanel.rootVisible = False
+		appPanel.add(runningJobPanel)
 
 	def onInitToolbar(self, toolbar, adapterName):
 		"""Initialise menu with static and dynamic menus (plugins)."""

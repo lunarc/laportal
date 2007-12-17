@@ -35,35 +35,72 @@ class CustomJobPage(JobPage):
 	def onCreateEditJobForm(self, task):
 		"""Create the form used when editing an existing job definition
 		is created."""
-	
-		form = Web.Ui.Form("editJobForm", self.pageLoc()+"/Plugins/%s/CustomJobPage" % (pluginName), "Edit Abaqus job", width="26em")
 		
 		attribs = task.getAttributes()
 		xrslAttribs = task.getXRSLAttributes()
+
+		form = Web.UiExt.Form(self, "editJobForm")
+		form.caption = "Edit ABAQUS job"
 		
-		form.beginFieldSet("ABAQUS settings")
-		form.addFile("Input file", "inputFile", attribs["inputFile"])
-		form.addBreak()
-		form.addReadonlyText("Current file", "prevFile", attribs["inputFile"])
-		form.addBreak()
-		form.addText("License server", "licenseServer", attribs["licenseServer"], fieldType="hostname")
-		form.endFieldSet()
+		settingsFieldSet = Web.UiExt.FieldSet(self)
+		settingsFieldSet.legend = "ABAQUS settings"
 		
-		form.beginFieldSet("Job settings")
-		form.addText("CPU time (s)", "cpuTime", xrslAttribs["cpuTime"], fieldType="int")
-		form.addBreak()
-		form.addText("Job name", "jobName", xrslAttribs["jobName"])
-		form.addBreak()
-		form.addText("Email notification", "email", xrslAttribs["notify"], fieldType="email")
-		form.addHidden("", "oldJobName", xrslAttribs["jobName"])
-		form.endFieldSet()
+		inputFile = Web.UiExt.FileField(self, "inputFile", "Input file")
+	
+		prevFile = Web.UiExt.TextField(self, "prevFile", "Current file")
+		prevFile.value = attribs["inputFile"]
 		
-		form.setControlHelp("inputFile", "Select the ABAQUS input file to be used using the Browse button.")
-		form.setControlHelp("licenseServer", "Specifiy the hostname of the ABAQUS license server to be used.")
-		form.setControlHelp("cpuTime", "Expected CPU time needed for the job to complete.")
-		form.setControlHelp("jobName", "A descriptive name used to identify the job on the Grid.")
-		form.setControlHelp("email", "The job can send status notifications to the given email address.")	
+		settingsFieldSet.add(inputFile)
+		settingsFieldSet.add(prevFile)
 		
+		licenseServer = Web.UiExt.TextField(self, "licenseServer", "License server")
+		licenseServer.value = attribs["licenseServer"]
+		
+		settingsFieldSet.add(licenseServer)
+		
+		form.add(settingsFieldSet)
+		
+		jobSettingsFieldSet = Web.UiExt.FieldSet(self)
+		jobSettingsFieldSet.legend = "Job settings"
+		
+		cpuTime = Web.UiExt.TextField(self, "cpuTime", "CPU time (minutes)")
+		cpuTime.value = xrslAttribs["cpuTime"]
+
+		jobName = Web.UiExt.TextField(self, "jobName", "Job name")
+		jobName.value = xrslAttribs["jobName"]
+		oldJobName = Web.UiExt.Hidden(self, "oldJobName")
+		oldJobName.value = xrslAttribs["jobName"]
+		
+		email = Web.UiExt.TextField(self, "email", "Email address")
+		email.value = xrslAttribs["notify"]
+		
+		jobSettingsFieldSet.add(cpuTime)
+		jobSettingsFieldSet.add(jobName)
+		jobSettingsFieldSet.add(oldJobName)
+		jobSettingsFieldSet.add(email)
+		
+		form.add(jobSettingsFieldSet)
+	
+		#form = Web.Ui.Form("editJobForm", self.pageLoc()+"/Plugins/%s/CustomJobPage" % (pluginName), "Edit Abaqus job", width="26em")
+		#
+		#
+		#form.beginFieldSet("ABAQUS settings")
+		#form.addFile("Input file", "inputFile", attribs["inputFile"])
+		#form.addBreak()
+		#form.addReadonlyText("Current file", "prevFile", attribs["inputFile"])
+		#form.addBreak()
+		#form.addText("License server", "licenseServer", attribs["licenseServer"], fieldType="hostname")
+		#form.endFieldSet()
+		#
+		#form.beginFieldSet("Job settings")
+		#form.addText("CPU time (s)", "cpuTime", xrslAttribs["cpuTime"], fieldType="int")
+		#form.addBreak()
+		#form.addText("Job name", "jobName", xrslAttribs["jobName"])
+		#form.addBreak()
+		#form.addText("Email notification", "email", xrslAttribs["notify"], fieldType="email")
+		#form.addHidden("", "oldJobName", xrslAttribs["jobName"])
+		#form.endFieldSet()
+		#		
 		return form
 	
 	def onValidateValues(self, form):

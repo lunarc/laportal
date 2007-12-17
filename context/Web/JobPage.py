@@ -109,8 +109,9 @@ class JobPage(ApplicationSecurePage):
 		return self._getSessionValue("jobpage_task")
 	
 	def getForm(self):
-		"""Convenience function for retrieving the current session task."""		
-		return self._getSessionValue("jobpage_form")
+		"""Convenience function for retrieving the current session task."""
+		return self.__form
+		#return self._getSessionValue("jobpage_form")
 	
 	def getJobName(self):
 		"""Convenience function for retrieveing the current job name."""
@@ -153,8 +154,8 @@ class JobPage(ApplicationSecurePage):
 			self.session().delValue("jobpage_task")
 		if self.session().hasValue("jobpage_jobdir"):
 			self.session().delValue("jobpage_jobdir")
-		if self.session().hasValue("jobpage_form"):
-			self.session().delValue("jobpage_form")
+		#if self.session().hasValue("jobpage_form"):
+		#	self.session().delValue("jobpage_form")
 
 	def cleanup(self):
 		"""Handle cleanup action."""
@@ -185,7 +186,10 @@ class JobPage(ApplicationSecurePage):
 		
 	# ----------------------------------------------------------------------
 	# Overidden methods (WebKit)
-	# ----------------------------------------------------------------------			
+	# ----------------------------------------------------------------------
+	
+	def onInit(self, adapterName):
+		self.__form = None
 	
 	def writeContent(self):
 		"""Render job page"""
@@ -258,8 +262,9 @@ class JobPage(ApplicationSecurePage):
 				form.addFormButton("Modify", "_action_modify")
 				form.addFormButton("Back", "_action_back")
 				form.setHaveSubmit(False)
-								
-				self.session().setValue("jobpage_form", form)
+				
+				self.__form = form				
+				#self.session().setValue("jobpage_form", form)
 				
 			elif self.request().hasField("createjob"):
 				
@@ -273,7 +278,8 @@ class JobPage(ApplicationSecurePage):
 				form = self.onCreateNewJobForm(task)
 				form.setSubmitButton("_action_create", "Create")
 				
-				self.session().setValue("jobpage_form", form)
+				self.__form = form
+				#self.session().setValue("jobpage_form", form)
 				self.session().setValue("jobpage_task", task)				
 				
 			elif self.session().hasValue("jobpage_editing"):
@@ -334,8 +340,9 @@ class JobPage(ApplicationSecurePage):
 					form.addFormButton("Modify", "_action_modify")
 					form.addFormButton("Back", "_action_back")
 					form.setHaveSubmit(False)
-								
-					self.session().setValue("jobpage_form", form)
+					
+					self.__form = form			
+					#self.session().setValue("jobpage_form", form)
 					
 				else:
 					Web.Dialogs.infoBox(self, "Session invalid. try editing the job again." , "Information")
@@ -390,8 +397,10 @@ class JobPage(ApplicationSecurePage):
 		
 		form = None
 		
-		if self.session().hasValue("jobpage_form"):
-			form = self.session().value("jobpage_form")
+		if self.__form!=None:
+			#if self.session().hasValue("jobpage_form"):
+			#form = self.session().value("jobpage_form")
+			form = self.__form
 			form.retrieveFieldValues(self.request())
 		else:
 			self.setFormMessage("No form found.")
@@ -513,8 +522,10 @@ class JobPage(ApplicationSecurePage):
 				
 		form = None
 		
-		if self.session().hasValue("jobpage_form"):
-			form = self.session().value("jobpage_form")
+		if self.__form!=None:
+			#if self.session().hasValue("jobpage_form"):
+			#form = self.session().value("jobpage_form")
+			form = self.__form
 			form.retrieveFieldValues(self.request())
 		else:
 			self.setFormMessage("No form found.")
@@ -638,7 +649,9 @@ class JobPage(ApplicationSecurePage):
 		task = None
 		
 		if self.session().hasValue("jobpage_form"):
-			form = self.session().value("jobpage_form")
+			#if self.session().hasValue("jobpage_form"):
+			#form = self.session().value("jobpage_form")
+			form = self.__form
 			form.retrieveFieldValues(self.request())
 
 		if self.session().hasValue("jobpage_task"):
@@ -728,14 +741,25 @@ class JobPage(ApplicationSecurePage):
 		The JobPage class provides a default job creation form asking
 		for the name of the new job definition. (Optional)"""
 		
-		form = Web.Ui.Form("newJobForm", self.onGetPageAddress(), "Create an %s job" % (task.getDescription()), width="26em")
+		form = Web.UiExt.Form(self, "newJobForm")
+		form.caption = "Create an %s job" % (task.getDescription())
 		
 		attribs = task.getAttributes()
 		xrslAttribs = task.getXRSLAttributes()
 		
-		form.addBreak()
-		form.addText("Job name", "jobName", xrslAttribs["jobName"], width="20", labelWidth="12em")
-		form.addBreak()
+		jobName = Web.UiExt.TextField(self, "jobName", "Job name")
+		jobName.value = xrslAttribs["jobName"]
+		
+		form.add(jobName)
+
+		#form = Web.Ui.Form("newJobForm", self.onGetPageAddress(), "Create an %s job" % (task.getDescription()), width="26em")
+		#
+		#attribs = task.getAttributes()
+		#xrslAttribs = task.getXRSLAttributes()
+		#
+		#form.addBreak()
+		#form.addText("Job name", "jobName", xrslAttribs["jobName"], width="20", labelWidth="12em")
+		#form.addBreak()
 	
 		return form
 	

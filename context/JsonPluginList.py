@@ -32,7 +32,7 @@ class JsonPluginList(JsonPage):
 					infoFile = file(infoFilename)
 					description = infoFile.readline().strip()
 					infoFile.close()
-					pluginList.append([entry, fullPath, description])
+					pluginList.append([entry, fullPath, entry, description])
 
 		return pluginList	
 	
@@ -50,6 +50,7 @@ class JsonPluginList(JsonPage):
 			item["id"] = i
 			item["leaf"] = True
 			item["cls"] = "file"
+			item["url"] = self.pageLoc()+"/Plugins/"+plugin[2]+"/CustomJobPage?createjob=0"			
 			pluginTreeList.append(item)
 			i+=1
 		

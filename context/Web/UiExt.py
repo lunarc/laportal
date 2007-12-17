@@ -60,12 +60,20 @@ class Base(object):
 	def doRender(self):
 		return P()
 	
-	def render(self):
-		if self.__visible:
-			tag = self.doRender()
-			self.__page.writeln(tag)
+	def render(self, page = None):
+		if page == None:
+			if self.__visible:
+				tag = self.doRender()
+				self.__page.writeln(tag)
+			else:
+				self.__page.writeln("")
 		else:
-			self.__page.writeln("")
+			if self.__visible:
+				tag = self.doRender()
+				page.writeln(tag)
+			else:
+				page.writeln("")
+			
 			
 	def doSetupJavaScript(self):
 		pass
@@ -159,10 +167,37 @@ class Form(Base):
 		self.__controls = []
 		self.__actions = []
 		self.__values = {}
+		self.__transferFields = []
+		
+	def addFormButton(self, caption, action):
+		# form.addFormButton("Modify", "_action_modify")
+		button = Button(self.page, action.split("_")[2])
+		button.text = caption
+		self.add(button)
+		
+	def setHaveSubmit(self, flag):
+		pass
+	
+	def setSubmitButton(self, action, caption):
+		# form.addFormButton("Modify", "_action_modify")
+		button = Button(self.page, action.split("_")[2])
+		button.text = caption
+		self.add(button)
+		
+	def retrieveFieldValues(self, request):
+		self.retrieve(request)
+		
+	def getFieldValues(self):
+		return self.values
+	
+	def getFileTransferFields(self):
+		return self.__transferFields
 		
 	def clear(self):
 		self.__controls = []
 		self.__actions = []
+		self.__values = {}
+		self.__transferFields = []
 		
 	def add(self, control):
 		if control.actionEnabled:
@@ -172,6 +207,9 @@ class Form(Base):
 			for button in control.controls:
 				if button.actionEnabled:
 					self.__actions.append(button.action)
+					
+		if isinstance(control, FileField):
+			self.__transferFields.append(FileField.name)
 
 		self.__controls.append(control)
 		
@@ -1380,6 +1418,7 @@ class TreePanel(Base):
 		self.__items = []
 
 		self.__dataUrl = ""
+		self.__dataUrls = []
 		self.__contentEl = ""
 		
 		self.__config["el"] = None
@@ -1390,6 +1429,12 @@ class TreePanel(Base):
 		self.__config["title"] = ""
 		self.__config["rootVisible"] = False
 		self.__config["loader"] = 'new Ext.tree.TreeLoader({dataUrl:"%s"})' % self.__dataUrl
+		
+	def addDataUrl(self, url, title = ""):
+		self.__dataUrls.append([url, title])
+		
+	def clearDataUrls(self):
+		self.__dataUrls = []
 		
 	def getConfigString(self):
 		
@@ -1431,12 +1476,30 @@ class TreePanel(Base):
 		#
 		#root.expand(false, /*no anim*/ false);
 
-		self.addJS("%s = new Ext.tree.TreePanel(%s);" % (self.name, self.configString))
-		self.addJS("var root%s = new Ext.tree.AsyncTreeNode({text:'Test', draggable: false, id:'source'});" % (self.name))
-		self.addJS("%s.on('click', function(node, e) {window.location = node.attributes.url;});" % (self.name))
-		self.addJS("%s.setRootNode(root%s);" % (self.name, self.name))
-		#self.addJS("%s.render();" % (self.name))
-		self.addJS("%s.expandAll();" % (self.name))
+		if len(self.__dataUrls)==0:
+			self.addJS("%s = new Ext.tree.TreePanel(%s);" % (self.name, self.configString))
+			self.addJS("var root%s = new Ext.tree.AsyncTreeNode({text:'Test', draggable: false, id:'source'});" % (self.name))
+			self.addJS("%s.on('click', function(node, e) {window.location = node.attributes.url;});" % (self.name))
+			self.addJS("%s.setRootNode(root%s);" % (self.name, self.name))
+			#self.addJS("%s.render();" % (self.name))
+			self.addJS("%s.expandAll();" % (self.name))
+		else:
+			self.addJS("%s = new Ext.tree.TreePanel(%s);" % (self.name, self.configString))
+			self.addJS("var root%s = new Ext.tree.TreeNode({text:'Test', draggable: false, id:'source'});" % (self.name))
+
+			i = 1
+			
+			for url in self.__dataUrls:
+				self.addJS("var dataNode%s%d = new Ext.tree.AsyncTreeNode({text:'%s', draggable: false, id:'source%s%d', loader: new Ext.tree.TreeLoader({dataUrl:'%s'})});" % (self.name, i, url[1], self.name, i, url[0]))
+				self.addJS("root%s.appendChild(dataNode%s%d);" % (self.name, self.name, i))
+				#self.addJS("dataNode%s%d.on('click', function(node, e) {window.location = node.attributes.url;});" % (self.name, i))
+				#self.addJS("dataNode%s%d.expandChildNodes();" % (self.name, i))
+				i += 1
+				
+			self.addJS("%s.on('click', function(node, e) {window.location = node.attributes.url;});" % (self.name))
+			self.addJS("%s.setRootNode(root%s);" % (self.name, self.name))
+			self.addJS("root%s.expandChildNodes();" % (self.name))
+			
 				
 	#def doRender(self):
 	#	contentEl = DIV(id=self.contentEl)
@@ -1479,6 +1542,9 @@ class TreePanel(Base):
 	def getDataUrl(self):
 		return self.__dataUrl
 	
+	def getDataUrls(self):
+		return self.__dataUrls
+	
 	def setTitle(self, title):
 		self.__config["title"] = title
 		
@@ -1499,6 +1565,7 @@ class TreePanel(Base):
 	enableDD = property(getEnableDD, setEnableDD)
 	containerScroll = property(getContainerScroll, setContainerScroll)
 	dataUrl = property(getDataUrl, setDataUrl)
+	dataUrls = property(getDataUrls, None)
 	title = property(getTitle, setTitle)
 	rootVisible = property(getRootVisible, setRootVisible)
 		

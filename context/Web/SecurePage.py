@@ -79,6 +79,7 @@ class SecurePage(DefaultPage):
 		
 		# Awaken our superclass
 		
+		lapDebug("awake")
 		DefaultPage.awake(self, trans)
 
 		# Handle four cases: logout, login attempt, already logged in, and not already logged in.
@@ -91,7 +92,9 @@ class SecurePage(DefaultPage):
 		# Get login id and immediately clear it from the session
 		
 		loginid = session.value('loginid', None)
+		lapDebug("loginid = "+str(loginid))
 		if loginid:
+			lapDebug("Deleting loginid.")
 			session.delValue('loginid')
 		
 		# Are they logging out?
@@ -103,6 +106,7 @@ class SecurePage(DefaultPage):
 			# They are logging out.  Clear all session variables and take them to the
 			# Login page with a "logged out" message.
 			
+			lapDebug("Invalidating session.")
 			session.invalidate()
 			request.setField('extra', 'You have been logged out.')
 			request.setField('action', string.split(request.urlPath(), '/')[-1])
@@ -114,7 +118,6 @@ class SecurePage(DefaultPage):
 		elif request.hasField('login') and request.hasField('proxy'):
 			
 			lapInfo("User logging in.")
-			print "User logging in."
 			
 			# They are logging in.  Clear session
 			
