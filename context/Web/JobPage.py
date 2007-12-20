@@ -189,9 +189,55 @@ class JobPage(ApplicationSecurePage):
 	# ----------------------------------------------------------------------
 	
 	def onInit(self, adapterName):
-		self.__form = None
+		form = self.onCreateEditJobForm()
+		form.visible = False
+		self.addControl("mainForm", form)
+		
+	def onBeforeRender(self, adapterName):
+		
+		if self.request().hasField("editjob"):
+			
+			# Get neccessary info
+			
+			mainForm = self.getControl("mainForm")
+			mainForm.visible = True
+			
+			self.cleanSession()
+			
+			jobName = ""
+			jobDir = ""
+			task = None
+			
+			jobName = self.request().field("editjob")
+			self.session().setValue("jobpage_jobname", jobName)
+			
+			user = Lap.Session.User(self.session().value('authenticated_user'))
+			userDir = user.getDir();
+			jobDir = userDir+"/job_%s" % (jobName)
+			
+			taskFile = file(os.path.join(jobDir,"job.task"), "r")
+			task = pickle.load(taskFile)
+			task.refresh()
+			taskFile.close()
+			
+			self.session().setValue("jobpage_task", task)
+			self.session().setValue("jobpage_jobdir", jobDir)
+			self.session().setValue("jobpage_editing", "")
+			
+			attribs = task.getAttributes()
+			xrslAttribs = task.getXRSLAttributes()
+			
+			# Create the form, now with previous values
+			
+			self.onAssignFormValues(task, mainForm)
+			
+			# Change the submit button
+			
+			mainForm.addFormButton("Modify", "_action_modify")
+			mainForm.addFormButton("Back", "_action_back")
+			mainForm.setHaveSubmit(False)		
 	
-	def writeContent(self):
+	def _writeContent(self):
 		"""Render job page"""
 		
 		if self.session().hasValue("jobpage_status"):
@@ -726,7 +772,10 @@ class JobPage(ApplicationSecurePage):
 		
 	# ----------------------------------------------------------------------
 	# JobPage Event methods (Callbacks)
-	# ----------------------------------------------------------------------			
+	# ----------------------------------------------------------------------
+	
+	def onAssignFormValues(self, task, form):
+		pass
 
 	def onCreateNewTask(self):
 		"""Return the task instance for derived JobPage class.
@@ -735,7 +784,7 @@ class JobPage(ApplicationSecurePage):
 		for example when a new job definition is created. (Must implement)"""
 		pass
 	
-	def onCreateNewJobForm(self, task):
+	def onCreateNewJobForm(self, task=None):
 		"""Return form used when creating a new job definition.
 		
 		The JobPage class provides a default job creation form asking
@@ -751,19 +800,10 @@ class JobPage(ApplicationSecurePage):
 		jobName.value = xrslAttribs["jobName"]
 		
 		form.add(jobName)
-
-		#form = Web.Ui.Form("newJobForm", self.onGetPageAddress(), "Create an %s job" % (task.getDescription()), width="26em")
-		#
-		#attribs = task.getAttributes()
-		#xrslAttribs = task.getXRSLAttributes()
-		#
-		#form.addBreak()
-		#form.addText("Job name", "jobName", xrslAttribs["jobName"], width="20", labelWidth="12em")
-		#form.addBreak()
 	
 		return form
 	
-	def onCreateEditJobForm(self, task):
+	def onCreateEditJobForm(self, task=None):
 		"""Return form used when editing an existing job definition.
 		
 		This method is called when an editing form is needed for editing

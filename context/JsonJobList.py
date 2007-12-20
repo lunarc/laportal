@@ -66,7 +66,7 @@ class JsonJobList(JsonPage):
 			item["leaf"] = True
 			item["cls"] = "file"
 			# https://malina.byggmek.lth.se/lap/context/Plugins/Abaqus/CustomJobPage?editjob=test
-			item["url"] = self.pageLoc()+jobDef[2]+"?editjob=test"
+			item["url"] = self.pageLoc()+jobDef[2]+"?editjob=%s" % jobDef[0]
 			jobDefTreeList.append(item)
 			i+=1
 		

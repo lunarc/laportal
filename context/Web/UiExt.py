@@ -165,6 +165,7 @@ class Form(Base):
 		self.__width = 400
 		self.__sizeUnit = "px"
 		self.__controls = []
+		self.__controlDict = {}
 		self.__actions = []
 		self.__values = {}
 		self.__transferFields = []
@@ -199,6 +200,20 @@ class Form(Base):
 		self.__values = {}
 		self.__transferFields = []
 		
+	def recAdd(self, fieldset):
+		
+		controls = []
+		
+		for control in fieldset.controls:
+
+			if isinstance(control, FieldSet):
+				setControls = self.recAdd(control)
+				controls = controls + setControls
+			else:
+				controls.append(control)
+				
+		return controls
+		
 	def add(self, control):
 		if control.actionEnabled:
 			self.__actions.append(control.action)
@@ -212,6 +227,15 @@ class Form(Base):
 			self.__transferFields.append(FileField.name)
 
 		self.__controls.append(control)
+
+		# Add "all" controls to control dictionary
+
+		if isinstance(control, FieldSet):
+			allControls = self.recAdd(control)
+			for addControl in allControls:
+				self.__controlDict[addControl.name] = addControl
+		else:
+			self.__controlDict[control.name] = control
 		
 	def setRenderTarget(self, target):
 		self.__renderTarget = target
@@ -257,6 +281,12 @@ class Form(Base):
 	
 	def getValues(self):
 		return self.__values
+	
+	def getControlDict(self):
+		return self.__controlDict
+	
+	def getControls(self):
+		return self.__controls
 	
 	def recRetrieve(self, request):
 		
@@ -335,6 +365,8 @@ class Form(Base):
 	sizeUnit = property(getSizeUnit, setSizeUnit)
 	actions = property(getActions, None)
 	values = property(getValues, None)
+	controlDict = property(getControlDict, None)
+	controls = property(getControls, None)
 	
 class Field(Base, FieldValidationMixin):
 	def __init__(self, page=None, name = "field"):
@@ -751,6 +783,9 @@ class FieldSet(Base):
 	def getLegend(self):
 		return self.__legend
 	
+	def getControls(self):
+		return self.__controls
+	
 	def recRetrieve(self, request):
 		
 		controlValues = {}
@@ -785,6 +820,7 @@ class FieldSet(Base):
 		self.recUpdate(formDict)
 	
 	legend = property(getLegend, setLegend)
+	controls = property(getControls, None                                                                                                                                                                                                                                                                                                                                                                  )
 	
 class TextArea(Field):
 	def __init__(self, page=None, name="textarea", fieldLabel = "textarea", rows=4, cols=80, width=200, readonly=False, allowBlank=False):
