@@ -1,7 +1,7 @@
 #
 # ApplicationSecurePage base class module
 #
-# Copyright (C) 2007 Jonas Lindemann
+# Copyright (C) 2006-2008 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,11 +25,9 @@ import string, os
 from HyperText.HTML import *
 from Web.SecurePage import SecurePage
 
+import Web.Ui
 import Lap.Version
 from Lap.Log import *
-
-import Web.Ui
-import Web.UiExt
 
 import LapSite
 
@@ -173,128 +171,27 @@ class ApplicationSecurePage(SecurePage):
 	# Overidden methods (ApplicationPage)
 	# ----------------------------------------------------------------------					
 
-	#def onInitMenu(self, menuBar, adapterName):
-	#	"""Initialise menu with static and dynamic menus (plugins)."""
-	#	
-	#	# --- Information menu --- 
-	#	
-	#	menuSession = Web.Ui.Menu(self, "menuSession", "Session", "", width=130)
-	#	menuSession.setHint("Functions for requesting a certificate and authorisation on the systems.")
-	#	menuSession.addMenuItem(Web.Ui.MenuItem("Log out...",self.pageLoc()+"/LogoutPage"))
-	#
-	#	menuPreferences = Web.Ui.Menu(self, "menuPreferences", "Settings", "", width=140)
-	#	menuPreferences.setHint("Functions for setting special user preferences.")
-	#	menuPreferences.addMenuItem(Web.Ui.MenuItem("Grid...",self.pageLoc()+"/GridPrefsPage"))
-	#	menuPreferences.addMenuItem(Web.Ui.MenuItem("User...",self.pageLoc()+"/UserPrefsPage"))
-	#	
-	#	if self.isVOAdminUser():
-	#		menuPreferences.addMenuItem(Web.Ui.MenuItem("VO Admin...",self.pageLoc()+"/VOAdminPage"))
-	#
-	#	menuCreate = Web.Ui.Menu(self, "menuJobs", "Create", "", width=220)
-	#	menuCreate.setHint("Functions for creating, submitting and managing jobs defined on the portal.")
-	#
-	#	jobPluginList = self._findJobPlugins()
-	#
-	#	for plugin in jobPluginList:
-	#		pluginName = plugin[0]
-	#		pluginDir = plugin[1]
-	#		pluginDescr = plugin[2]
-	#		menuCreate.addMenuItem(Web.Ui.MenuItem("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomJobPage?createjob=0" % (pluginName)))
-	#	
-	#	menuJoin = Web.Ui.Menu(self, "menuJoin", "Join", "", width=170)
-	#	menuJoin.setHint("Functions for joining a specific virtual organisation (VO).")
-	#
-	#	voPluginList = self._findVOPlugins()
-	#
-	#	for plugin in voPluginList:
-	#		pluginName = plugin[0]
-	#		pluginDir = plugin[1]
-	#		pluginDescr = plugin[2]
-	#		menuJoin.addMenuItem(Web.Ui.MenuItem("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomVOPage" % (pluginName)))
-	#		
-	#	menuInfo = Web.Ui.Menu(self, "menuInfo", "Information", "", width=170)
-	#	menuInfo.setHint("Installed documentation")
-	#
-	#	docPluginList = self._findDocPlugins()
-	#
-	#	for plugin in docPluginList:
-	#		pluginName = plugin[0]
-	#		pluginDir = plugin[1]
-	#		pluginDescr = plugin[2]
-	#		pluginOrder = plugin[3]
-	#		pluginWidth = plugin[4]
-	#		pluginHeight = plugin[5]
-	#		pluginDocType = plugin[6]
-	#		if pluginDocType == "html":
-	#			menuInfo.addMenuItem(
-	#				Web.Ui.MenuItem(caption="%s..." % pluginDescr,
-	#				link=self.pageLoc()+"/Plugins/%s/CustomDocSecurePage" % (pluginName),
-	#				target="_blank",
-	#				windowFeatures="width=%d,height=%d,location=no,menubar=no,toolbar=yes,scrollbars=yes,resizable=yes" % (pluginWidth, pluginHeight)))
-	#		else:
-	#			menuInfo.addMenuItem(
-	#				Web.Ui.MenuItem(caption="%s..." % pluginDescr,
-	#				link=self.pageLoc()+"/Plugins/%s/CustomDocViewSecurePage" % (pluginName),
-	#				target="_blank",
-	#				windowFeatures="width=%d,height=%d,location=no,menubar=no,toolbar=no,scrollbars=yes,resizable=yes" % (pluginWidth, pluginHeight)))
-	#
-	#	menuManage = Web.Ui.Menu(self, "menuManage", "Manage", "", width=170)
-	#	menuManage.setHint("Functions for managing jobs")
-	#	menuManage.addMenuItem(Web.Ui.MenuItem("Jobs definitions...",self.pageLoc()+"/ManageJobPage"))
-	#	menuManage.addMenuItem(Web.Ui.MenuItem("Running jobs...",self.pageLoc()+"/PleaseWaitPage?URL=ManageGridJobPage&Message=Querying for jobs..."))
-	#	menuManage.addMenuItem(Web.Ui.MenuItem("Syncronise jobs...",self.pageLoc()+"/PleaseWaitPage?URL=SyncJobsPage&Message=Syncronising job list..."))
-	#	
-	#	menuStorage = Web.Ui.Menu(self, "menuStorage", "Storage", "", width=170)
-	#	menuStorage.setHint("Functions for accessing storage resources")
-	#	menuStorage.addMenuItem(Web.Ui.MenuItem("Query resources...", "http://www.nordugrid.org/monitor/loadmon.php"))
-	#	menuStorage.addMenuItem(Web.Ui.MenuItem("GridFTP client...", self.pageLoc()+"/GridFtpClientPage"))
-	#
-	#	menuAbout = Web.Ui.Menu(self, "menuAbout", "About...", self.pageLoc()+"/WelcomePage")
-	#	menuAbout.addMenuItem(Web.Ui.MenuItem("LUNARC...",self.pageLoc()+"/SecureWelcomePage"))
-	#	menuAbout.addMenuItem(Web.Ui.MenuItem("Portal...",self.pageLoc()+"/SecureWelcomePage"))
-	#	
-	#	menuBar.addMenu(menuInfo)
-	#	menuBar.addMenu(menuSession)
-	#	menuBar.addMenu(menuJoin)
-	#	menuBar.addMenu(menuPreferences)
-	#	menuBar.addMenu(menuCreate)
-	#	menuBar.addMenu(menuManage)
-	#	menuBar.addMenu(menuStorage)
-	#	menuBar.addMenu(menuAbout)
-	
-	def onInitAppPanel(self, appPanel, adapterName):
-		
-		jobPanel = Web.UiExt.TreePanel(self, "jobPanel")
-		jobPanel.addDataUrl(self.pageLoc()+"/JsonPluginList", "Plugins")
-		jobPanel.addDataUrl(self.pageLoc()+"/JsonJobList", "Job definitions")
-		jobPanel.title = "Jobs"
-		jobPanel.animate = False
-		jobPanel.rootVisible = False
-		appPanel.add(jobPanel)
-		
-		runningJobPanel = Web.UiExt.TreePanel(self, "runningJobPanel")
-		runningJobPanel.dataUrl = self.pageLoc()+"/JsonJobList"
-		runningJobPanel.title = "Running jobs"
-		runningJobPanel.animate = False
-		runningJobPanel.rootVisible = False
-		appPanel.add(runningJobPanel)
-
-	def onInitToolbar(self, toolbar, adapterName):
+	def onInitMenu(self, menuBar, adapterName):
 		"""Initialise menu with static and dynamic menus (plugins)."""
 		
 		# --- Information menu --- 
 		
-		menuSession = Web.UiExt.Menu(self, "menuSession")
-		menuSession.add("Log out...", self.pageLoc()+"/LogoutPage")
+		menuSession = Web.Ui.Menu(self, "menuSession", "Session", "", width=130)
+		menuSession.setHint("Functions for requesting a certificate and authorisation on the systems.")
+		menuSession.addMenuItem(Web.Ui.MenuItem("Log out...",self.pageLoc()+"/LogoutPage"))
 
-		menuPreferences = Web.UiExt.Menu(self, "menuPreferences")
-		menuPreferences.add("Grid...",self.pageLoc()+"/GridPrefsPage")
-		menuPreferences.add("User...",self.pageLoc()+"/UserPrefsPage")
+		menuPreferences = Web.Ui.Menu(self, "menuPreferences", "Settings", "", width=140)
+		menuPreferences.setHint("Functions for setting special user preferences.")
+		menuPreferences.addMenuItem(Web.Ui.MenuItem("Grid...",self.pageLoc()+"/GridPrefsPage"))
+		menuPreferences.addMenuItem(Web.Ui.MenuItem("User...",self.pageLoc()+"/UserPrefsPage"))
 		
 		if self.isVOAdminUser():
-			menuPreferences.add("VO Admin...",self.pageLoc()+"/VOAdminPage")
+			menuPreferences.addMenuItem(Web.Ui.MenuItem("VO Admin...",self.pageLoc()+"/VOAdminPage"))
+		if self.isUserAdminUser():
+			menuPreferences.addMenuItem(Web.Ui.MenuItem("User Admin...",self.pageLoc()+"/UserAdminPage"))
 
-		menuCreate = Web.UiExt.Menu(self, "menuJobs")
+		menuCreate = Web.Ui.Menu(self, "menuJobs", "Create", "", width=220)
+		menuCreate.setHint("Functions for creating, submitting and managing jobs defined on the portal.")
 
 		jobPluginList = self._findJobPlugins()
 
@@ -302,9 +199,10 @@ class ApplicationSecurePage(SecurePage):
 			pluginName = plugin[0]
 			pluginDir = plugin[1]
 			pluginDescr = plugin[2]
-			menuCreate.add("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomJobPage?createjob=0" % (pluginName))
+			menuCreate.addMenuItem(Web.Ui.MenuItem("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomJobPage?createjob=0" % (pluginName)))
 		
-		menuJoin = Web.UiExt.Menu(self, "menuJoin")
+		menuJoin = Web.Ui.Menu(self, "menuJoin", "Join", "", width=170)
+		menuJoin.setHint("Functions for joining a specific virtual organisation (VO).")
 
 		voPluginList = self._findVOPlugins()
 
@@ -312,9 +210,10 @@ class ApplicationSecurePage(SecurePage):
 			pluginName = plugin[0]
 			pluginDir = plugin[1]
 			pluginDescr = plugin[2]
-			menuJoin.add("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomVOPage" % (pluginName))
+			menuJoin.addMenuItem(Web.Ui.MenuItem("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomVOPage" % (pluginName)))
 			
-		menuInfo = Web.UiExt.Menu(self, "menuInfo")
+		menuInfo = Web.Ui.Menu(self, "menuInfo", "Information", "", width=170)
+		menuInfo.setHint("Installed documentation")
 
 		docPluginList = self._findDocPlugins()
 
@@ -327,33 +226,39 @@ class ApplicationSecurePage(SecurePage):
 			pluginHeight = plugin[5]
 			pluginDocType = plugin[6]
 			if pluginDocType == "html":
-				menuInfo.add("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomDocPage" % (pluginName), "_blank",
-							 "width=%d,height=%d,location=no,menubar=no,toolbar=yes,scrollbars=yes,resizable=yes" %
-							 (pluginWidth, pluginHeight))
+				menuInfo.addMenuItem(
+					Web.Ui.MenuItem(caption="%s..." % pluginDescr,
+					link=self.pageLoc()+"/Plugins/%s/CustomDocSecurePage" % (pluginName),
+					target="_blank",
+					windowFeatures="width=%d,height=%d,location=no,menubar=no,toolbar=yes,scrollbars=yes,resizable=yes" % (pluginWidth, pluginHeight)))
 			else:
-				menuInfo.add("%s..." % pluginDescr, self.pageLoc()+"/Plugins/%s/CustomDocViewPage" % (pluginName), "_blank",
-							 "width=%d,height=%d,location=no,menubar=no,toolbar=no,scrollbars=yes,resizable=yes" % (pluginWidth, pluginHeight))
+				menuInfo.addMenuItem(
+					Web.Ui.MenuItem(caption="%s..." % pluginDescr,
+					link=self.pageLoc()+"/Plugins/%s/CustomDocViewSecurePage" % (pluginName),
+					target="_blank",
+					windowFeatures="width=%d,height=%d,location=no,menubar=no,toolbar=no,scrollbars=yes,resizable=yes" % (pluginWidth, pluginHeight)))
 
-		menuManage = Web.UiExt.Menu(self, "menuManage")
-		menuManage.add("Jobs definitions...",self.pageLoc()+"/ManageJobPage")
-		menuManage.add("Running jobs...",self.pageLoc()+"/PleaseWaitPage?URL=ManageGridJobPage&Message=Querying for jobs...")
-		menuManage.add("Syncronise jobs...",self.pageLoc()+"/PleaseWaitPage?URL=SyncJobsPage&Message=Syncronising job list...")
+		menuManage = Web.Ui.Menu(self, "menuManage", "Manage", "", width=170)
+		menuManage.setHint("Functions for managing jobs")
+		menuManage.addMenuItem(Web.Ui.MenuItem("Jobs definitions...",self.pageLoc()+"/ManageJobPage"))
+		menuManage.addMenuItem(Web.Ui.MenuItem("Running jobs...",self.pageLoc()+"/PleaseWaitPage?URL=ManageGridJobPage&Message=Querying for jobs..."))
+		menuManage.addMenuItem(Web.Ui.MenuItem("Syncronise jobs...",self.pageLoc()+"/PleaseWaitPage?URL=SyncJobsPage&Message=Syncronising job list..."))
 		
-		menuStorage = Web.UiExt.Menu(self, "menuStorage")
-		menuStorage.add("Query resources...", "http://www.nordugrid.org/monitor/loadmon.php")
-		menuStorage.add("GridFTP client...", self.pageLoc()+"/GridFtpClientPage")
+		menuStorage = Web.Ui.Menu(self, "menuStorage", "Storage", "", width=170)
+		menuStorage.setHint("Functions for accessing storage resources")
+		menuStorage.addMenuItem(Web.Ui.MenuItem("Query resources...", "http://www.nordugrid.org/monitor/loadmon.php"))
+		menuStorage.addMenuItem(Web.Ui.MenuItem("GridFTP client...", self.pageLoc()+"/GridFtpClientPage"))
 
-		menuAbout = Web.UiExt.Menu(self, "menuAbout")
-		menuAbout.add("LUNARC...",self.pageLoc()+"/SecureWelcomePage")
-		menuAbout.add("Portal...",self.pageLoc()+"/SecureWelcomePage")
+		menuAbout = Web.Ui.Menu(self, "menuAbout", "About...", self.pageLoc()+"/WelcomePage")
+		menuAbout.addMenuItem(Web.Ui.MenuItem("LUNARC...",self.pageLoc()+"/SecureWelcomePage"))
+		menuAbout.addMenuItem(Web.Ui.MenuItem("Portal...",self.pageLoc()+"/SecureWelcomePage"))
 		
-		toolbar.add("Information", menuInfo)
-		toolbar.add("Session", menuSession)
-		toolbar.add("Join", menuJoin)
-		toolbar.add("Preferences", menuPreferences)
-		toolbar.add("Create", menuCreate)
-		toolbar.add("Manage", menuManage)
-		toolbar.add("Storage", menuStorage)
-		toolbar.add("About", menuAbout)
-		
+		menuBar.addMenu(menuInfo)
+		menuBar.addMenu(menuSession)
+		menuBar.addMenu(menuJoin)
+		menuBar.addMenu(menuPreferences)
+		menuBar.addMenu(menuCreate)
+		menuBar.addMenu(menuManage)
+		menuBar.addMenu(menuStorage)
+		menuBar.addMenu(menuAbout)
 		

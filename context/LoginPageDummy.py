@@ -1,7 +1,7 @@
 #
 # LoginPageDummy
 #
-# Copyright (C) 2006-2007 Jonas Lindemann
+# Copyright (C) 2006-2008 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 from Web.ApplicationSecurePage import ApplicationSecurePage
 
-import Web.UiExt
+import Web.Dialogs
 
 class LoginPageDummy(ApplicationSecurePage):
 	"""Page that is used to initiate a login.
@@ -34,15 +34,10 @@ class LoginPageDummy(ApplicationSecurePage):
 	def title(self):
 		"""Return page title."""
 		return 'Logged in'
-	
-	def onInit(self, adapterName):
-		messageBox = Web.UiExt.MessageBox(self, 'messageBox')
-		messageBox.message = "You have been logged in."
-		messageBox.URL = self.expandPageLoc("SecureWelcomePage")
-		
-		self.addExtControl("messageBox", messageBox)
 
 	def writeContent(self):
 		"""Render page HTML."""
 		
-		pass
+		adapterName = self.request().adapterName()		
+		Web.Dialogs.messageBox(self, "You have been logged in.", "Information", "%s/context/SecureWelcomePage" % adapterName)
+

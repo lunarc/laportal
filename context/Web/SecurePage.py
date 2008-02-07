@@ -1,7 +1,7 @@
 #
 # SecurePage base class module
 #
-# Copyright (C) 2006 Jonas Lindemann
+# Copyright (C) 2006-2008 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@ from DefaultPage import DefaultPage
 from MiscUtils.Funcs import uniqueId
 
 import Lap.Session
+import Lap.Authorisation
+
 from Lap.Log import *
 
 import Grid.Security
@@ -55,9 +57,13 @@ class SecurePage(DefaultPage):
 		no logged-in user."""
 		return self.session().value('authenticated_user', None)
 	
-	def getAdminUser(self):
+	def getVOAdminUser(self):
 		"""Return name of configured administrative user."""
 		return LapSite.Admin["VOAdmin"]
+
+	def getUserAdminUser(self):
+		"""Return name of configured administrative user."""
+		return LapSite.Admin["UserAdmin"]
 
 	# ----------------------------------------------------------------------
 	# Methods
@@ -65,8 +71,12 @@ class SecurePage(DefaultPage):
 
 	def isVOAdminUser(self):
 		"""Return true if current user is administrative user."""
-		return self.getLoggedInUser() == self.getAdminUser()
+		return self.getLoggedInUser() == self.getVOAdminUser()
 	
+	def isUserAdminUser(self):
+		"""Return true if current user is administrative user."""
+		return self.getLoggedInUser() == self.getUserAdminUser()
+
 	# ----------------------------------------------------------------------
 	# Overidden methods (WebKit)
 	# ----------------------------------------------------------------------			
@@ -79,7 +89,6 @@ class SecurePage(DefaultPage):
 		
 		# Awaken our superclass
 		
-		lapDebug("awake")
 		DefaultPage.awake(self, trans)
 
 		# Handle four cases: logout, login attempt, already logged in, and not already logged in.
@@ -92,9 +101,7 @@ class SecurePage(DefaultPage):
 		# Get login id and immediately clear it from the session
 		
 		loginid = session.value('loginid', None)
-		lapDebug("loginid = "+str(loginid))
 		if loginid:
-			lapDebug("Deleting loginid.")
 			session.delValue('loginid')
 		
 		# Are they logging out?
@@ -106,7 +113,6 @@ class SecurePage(DefaultPage):
 			# They are logging out.  Clear all session variables and take them to the
 			# Login page with a "logged out" message.
 			
-			lapDebug("Invalidating session.")
 			session.invalidate()
 			request.setField('extra', 'You have been logged out.')
 			request.setField('action', string.split(request.urlPath(), '/')[-1])
@@ -138,6 +144,7 @@ class SecurePage(DefaultPage):
 				except:
 					lapWarning("Could not read proxy.")
 					proxy = None
+					pass
 			
 			# Check if they can successfully log in.  The loginid must match what was previously
 			# sent.
@@ -148,9 +155,9 @@ class SecurePage(DefaultPage):
 				request.delField('proxy')
 			else:
 				# Failed login attempt; have them try again.
-				session.invalidate()
 				request.setField('extra', 'Login failed.  Please try again.')
-				url = "/LoginPage"
+				
+				url = "/LoginPage" 
 				app.forward(trans, url)
 
 		# They aren't logging in; are they already logged in?
@@ -246,13 +253,20 @@ class SecurePage(DefaultPage):
 			os.chmod(user.getProxy(), stat.S_IRUSR)
 
 			# Ok, user is authenticated
-
-			self.session().setValue('authenticated_user', DNString)
-			self.session().setValue('user_proxy', user.getProxy())
 			
-			lapInfo("User %s logged in." % DNString)
+			# If user authenticated, check authorisation
+			
+			if Lap.Authorisation.isUserAuthorised(DNString):
+				self.session().setValue('authenticated_user', DNString)
+				self.session().setValue('user_proxy', user.getProxy())
+				lapInfo("User %s logged in." % DNString)
+				return 1
+			else:
+				lapInfo("User %s not authorised." % DNString)
+				self.session().setValue('authenticated_user', None)
+				self.session().setValue('user_proxy', None)
+				return 0
 
-			return 1
 
 		else:
 			lapInfo("User % failed login, proxy expired.")

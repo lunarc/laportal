@@ -1,7 +1,7 @@
 #
 # Job module
 #
-# Copyright (C) 2006-2007 Jonas Lindemann
+# Copyright (C) 2006-2008 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -105,7 +105,21 @@ class Task:
 		self.customXRSLGeneration = False
 		self.specialFiles = {}
 		
+		self.__version = "1.0"
+		
 		self.refresh()
+		
+	def __setstate__(self, state):
+		# Add version attribute to task
+		if '__version' not in state:
+			self.__version = 1.0
+		self.doUpdateState(state, self.__version)
+		self.__dict__.update(state)
+		
+	def doUpdateState(self, state, version):
+		"""Add or remove task attributes that has changed from
+		the version loaded from disk."""
+		pass
 
 	def setup(self):
 		"""Abstract routine responsible for creating the

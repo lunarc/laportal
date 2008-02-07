@@ -1,5 +1,5 @@
 #
-# VOAdminPage
+# UserAdminPage
 #
 # Copyright (C) 2006-2008 Jonas Lindemann
 #
@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-"""VOAdminPage module"""
+"""UserAdminPage module"""
 
 from Web.ApplicationSecurePage import ApplicationSecurePage
 
@@ -30,11 +30,11 @@ import LapSite
 
 import os, re
 
-class VOAdminPage(ApplicationSecurePage):
+class UserAdminPage(ApplicationSecurePage):
 	"""Maintains a list of DN and username mappings.
 	
-	The list of DN/username mappings are stored in a normal text
-	file, volist.txt, and is located in LapSite.Dirs["SessionDir"]
+	The list of authorised users is listed in the 
+	file, userlist.txt, and is located in LapSite.Dirs["SessionDir"]
 	
 	Only the portal admin user can use this page."""
 	
@@ -44,7 +44,7 @@ class VOAdminPage(ApplicationSecurePage):
 	
 	def title(self):
 		"""Return page title"""
-		return 'VO Administration Page'
+		return 'User Administration Page'
 	
 	def writeContent(self):
 		"""Render the text HTML"""
@@ -52,36 +52,35 @@ class VOAdminPage(ApplicationSecurePage):
 		# Retrieve user settings
 		
 		sessionDir = LapSite.Dirs["SessionDir"]
-		voListFilename = os.path.join(sessionDir, "volist.txt")
+		userListFilename = os.path.join(sessionDir, "userlist.txt")
 		
-		voList = []
+		userList = []
+		userDict = {}
 
-		if self.isVOAdminUser():
+		if self.isUserAdminUser():
 			
-			if os.path.exists(voListFilename):
-				voListFile = file(voListFilename)
-				lines = voListFile.readlines()
-				voListFile.close()
+			if os.path.exists(userListFilename):
+				userListFile = file(userListFilename)
+				lines = userListFile.readlines()
+				userListFile.close()
 				
 				for line in lines:
-					mapping = re.match('"(.*)"\s*(.*)', line).groups()
-					print "line =", line
-					print "mapping =", mapping
-					if len(mapping)==2:
-						voList.append([mapping[0], mapping[1]])
-						
-			self.session().setValue("voadmin_voList", voList)
+					userDN = line.strip()
+					if not userDict.has_key(userDN):
+						userList.append(line.strip())
+						userDict[userDN] = userDN
+
+			self.session().setValue("useradmin_userList", userList)
+			self.session().setValue("useradmin_userDict", userDict)
 					
-			form = Web.Ui.Form("VOAdminPAge", "%s/VOAdminPage" % self.pageLoc(), "Portal VO Administration", "40em")
+			form = Web.Ui.Form("UserAdminPage", "%s/UserAdminPage" % self.pageLoc(), "User Administration", "40em")
 			
-			form.beginSelect("VO Users", "voList", size=10, width = "35em")
-			for mapping in voList:
-				form.addOption(mapping[0] + " - " + mapping[1])
+			form.beginSelect("Allowed users", "userList", size=10, width = "35em")
+			for userDN in userList:
+				form.addOption(userDN)
 			form.endSelect()
 			
 			form.addText("User DN", "userDN", value = "", width="20em", labelWidth="", fieldType="string")
-			form.addBreak()
-			form.addText("Local unix account", "localAccount", value = "", width="10em", labelWidth="", fieldType="string")
 			form.addBreak()
 
 			form.addFormButton("Add", "_action_add")
@@ -100,26 +99,29 @@ class VOAdminPage(ApplicationSecurePage):
 		# Get the session directory
 		
 		sessionDir = LapSite.Dirs["SessionDir"]
-		voListFilename = os.path.join(sessionDir, "volist.txt")
+		userListFilename = os.path.join(sessionDir, "userlist.txt")
 		
 		# Retrieve userDN and local account from the request
 
 		userDN = self.getURLString(self.request(), "userDN")
-		localAccount = self.getString(self.request(), "localAccount")
-		
+
 		# Append the DN to the voList
 		
-		voList = self.session().value("voadmin_voList")
-		voList.append([userDN, localAccount])
+		userList = self.session().value("useradmin_userList")
+		userDict = self.session().value("useradmin_userDict")
 		
-		# Write VO list to file
+		if not userDict.has_key(userDN):
+			userList.append(userDN)
+			userDict[userDN] = userDN
 		
-		voListFile = file(voListFilename, "w")
+		# Write user list to file
 		
-		for mapping in voList:
-			voListFile.write('"%s" %s\n' % (mapping[0], mapping[1]))
+		userListFile = file(userListFilename, "w")
+		
+		for userDN in userList:
+			userListFile.write(userDN+"\n")
 			
-		voListFile.close()
+		userListFile.close()
 		
 		self.writeBody()
 	
@@ -129,36 +131,35 @@ class VOAdminPage(ApplicationSecurePage):
 		# Get the session directory
 		
 		sessionDir = LapSite.Dirs["SessionDir"]
-		voListFilename = os.path.join(sessionDir, "volist.txt")
+		userListFilename = os.path.join(sessionDir, "userlist.txt")
 		
 		# Retrieve userDN and local account from the request
 		
-		selectedItem = self.getURLString(self.request(), "voList")
+		selectedItem = self.getURLString(self.request(), "userList")
 
 		if selectedItem=="":
 			return
 		
-		userDN = selectedItem.split("-")[0].strip()
-		localAccount = selectedItem.split("-")[1].strip()
+		userDN = selectedItem
 				
 		# Remove DN from Vo list
 		
-		voList = self.session().value("voadmin_voList")
+		userList = self.session().value("useradmin_userList")
 		
 		i = 0
 		
-		for i in range(len(voList)):
-			if voList[i][0] == userDN:
-				del voList[i]
+		for i in range(len(userList)):
+			if userList[i] == userDN:
+				del userList[i]
 				break
 			
-		# Write VO list to file
+		# Write user list to file
 		
-		voListFile = file(voListFilename, "w")
+		userListFile = file(userListFilename, "w")
 		
-		for mapping in voList:
-			voListFile.write('"%s" %s\n' % (mapping[0], mapping[1]))
+		for userDN in userList:
+			userListFile.write(userDN)
 			
-		voListFile.close()
+		userListFile.close()
 					
 		self.writeBody()

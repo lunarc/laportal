@@ -152,7 +152,7 @@ class ManageGridJobPage(ApplicationSecurePage):
 
 				# Create form for managing jobs
 				
-				form = Web.Ui.TableForm("frmJobManager", "", "Manage GRID jobs", "55em", len(jobs)+1, 10)
+				form = Web.Ui.TableForm("frmJobManager", "", "Manage GRID jobs", "60em", len(jobs)+1, 10)
 				
 				form.setAction("ManageGridJobPage")
 				

@@ -65,11 +65,12 @@ class CustomJobPage(JobPage):
 		xrslAttribs = task.getXRSLAttributes()
 		
 		form.beginFieldSet("OCTAVE toolkit packages")
-		form.beginSelect("Package files", "packageFiles", size=6, width="22em")
+		form.beginSelect("Package files", "packageFiles", size=4, width="20em")
 		for package in attribs["packages"]:
 			print "Adding package."
 			form.addOption(package)
 		form.endSelect()
+		form.addBreak()
 		form.addFile("Add package file(s) (*.zip)", "packageFile", "")
 		form.addBreak()
 		form.addBreak()
@@ -81,10 +82,11 @@ class CustomJobPage(JobPage):
 		form.endFieldSet()
 		
 		form.beginFieldSet("Additional files")
-		form.beginSelect("Additional files", "extraFiles", size=6, width="22em")
+		form.beginSelect("Additional files", "extraFiles", size=4, width="20em")
 		for extraFile in attribs["extra"]:
 			form.addOption(extraFile)
 		form.endSelect()
+		form.addBreak()
 		form.addFile("Add additional file(s)", "extraFile", "")
 		form.addBreak()
 		form.addBreak()

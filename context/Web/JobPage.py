@@ -1,7 +1,7 @@
 #
 # JobPage base class module
 #
-# Copyright (C) 2006 Jonas Lindemann
+# Copyright (C) 2006-2008 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -109,9 +109,8 @@ class JobPage(ApplicationSecurePage):
 		return self._getSessionValue("jobpage_task")
 	
 	def getForm(self):
-		"""Convenience function for retrieving the current session task."""
-		return self.__form
-		#return self._getSessionValue("jobpage_form")
+		"""Convenience function for retrieving the current session task."""		
+		return self._getSessionValue("jobpage_form")
 	
 	def getJobName(self):
 		"""Convenience function for retrieveing the current job name."""
@@ -154,8 +153,8 @@ class JobPage(ApplicationSecurePage):
 			self.session().delValue("jobpage_task")
 		if self.session().hasValue("jobpage_jobdir"):
 			self.session().delValue("jobpage_jobdir")
-		#if self.session().hasValue("jobpage_form"):
-		#	self.session().delValue("jobpage_form")
+		if self.session().hasValue("jobpage_form"):
+			self.session().delValue("jobpage_form")
 
 	def cleanup(self):
 		"""Handle cleanup action."""
@@ -186,58 +185,9 @@ class JobPage(ApplicationSecurePage):
 		
 	# ----------------------------------------------------------------------
 	# Overidden methods (WebKit)
-	# ----------------------------------------------------------------------
+	# ----------------------------------------------------------------------			
 	
-	def onInit(self, adapterName):
-		form = self.onCreateEditJobForm()
-		form.visible = False
-		self.addControl("mainForm", form)
-		
-	def onBeforeRender(self, adapterName):
-		
-		if self.request().hasField("editjob"):
-			
-			# Get neccessary info
-			
-			mainForm = self.getControl("mainForm")
-			mainForm.visible = True
-			
-			self.cleanSession()
-			
-			jobName = ""
-			jobDir = ""
-			task = None
-			
-			jobName = self.request().field("editjob")
-			self.session().setValue("jobpage_jobname", jobName)
-			
-			user = Lap.Session.User(self.session().value('authenticated_user'))
-			userDir = user.getDir();
-			jobDir = userDir+"/job_%s" % (jobName)
-			
-			taskFile = file(os.path.join(jobDir,"job.task"), "r")
-			task = pickle.load(taskFile)
-			task.refresh()
-			taskFile.close()
-			
-			self.session().setValue("jobpage_task", task)
-			self.session().setValue("jobpage_jobdir", jobDir)
-			self.session().setValue("jobpage_editing", "")
-			
-			attribs = task.getAttributes()
-			xrslAttribs = task.getXRSLAttributes()
-			
-			# Create the form, now with previous values
-			
-			self.onAssignFormValues(task, mainForm)
-			
-			# Change the submit button
-			
-			mainForm.addFormButton("Modify", "_action_modify")
-			mainForm.addFormButton("Back", "_action_back")
-			mainForm.setHaveSubmit(False)		
-	
-	def _writeContent(self):
+	def writeContent(self):
 		"""Render job page"""
 		
 		if self.session().hasValue("jobpage_status"):
@@ -289,7 +239,6 @@ class JobPage(ApplicationSecurePage):
 				
 				taskFile = file(os.path.join(jobDir,"job.task"), "r")
 				task = pickle.load(taskFile)
-				task.refresh()
 				taskFile.close()
 				
 				self.session().setValue("jobpage_task", task)
@@ -308,9 +257,8 @@ class JobPage(ApplicationSecurePage):
 				form.addFormButton("Modify", "_action_modify")
 				form.addFormButton("Back", "_action_back")
 				form.setHaveSubmit(False)
-				
-				self.__form = form				
-				#self.session().setValue("jobpage_form", form)
+								
+				self.session().setValue("jobpage_form", form)
 				
 			elif self.request().hasField("createjob"):
 				
@@ -324,8 +272,7 @@ class JobPage(ApplicationSecurePage):
 				form = self.onCreateNewJobForm(task)
 				form.setSubmitButton("_action_create", "Create")
 				
-				self.__form = form
-				#self.session().setValue("jobpage_form", form)
+				self.session().setValue("jobpage_form", form)
 				self.session().setValue("jobpage_task", task)				
 				
 			elif self.session().hasValue("jobpage_editing"):
@@ -353,7 +300,6 @@ class JobPage(ApplicationSecurePage):
 						
 						taskFile = file(os.path.join(jobDir,"job.task"), "r")
 						task = pickle.load(taskFile)
-						task.refresh()
 						taskFile.close()
 						
 						self.session().setValue("jobpage_task", task)
@@ -386,9 +332,8 @@ class JobPage(ApplicationSecurePage):
 					form.addFormButton("Modify", "_action_modify")
 					form.addFormButton("Back", "_action_back")
 					form.setHaveSubmit(False)
-					
-					self.__form = form			
-					#self.session().setValue("jobpage_form", form)
+								
+					self.session().setValue("jobpage_form", form)
 					
 				else:
 					Web.Dialogs.infoBox(self, "Session invalid. try editing the job again." , "Information")
@@ -443,10 +388,8 @@ class JobPage(ApplicationSecurePage):
 		
 		form = None
 		
-		if self.__form!=None:
-			#if self.session().hasValue("jobpage_form"):
-			#form = self.session().value("jobpage_form")
-			form = self.__form
+		if self.session().hasValue("jobpage_form"):
+			form = self.session().value("jobpage_form")
 			form.retrieveFieldValues(self.request())
 		else:
 			self.setFormMessage("No form found.")
@@ -568,10 +511,8 @@ class JobPage(ApplicationSecurePage):
 				
 		form = None
 		
-		if self.__form!=None:
-			#if self.session().hasValue("jobpage_form"):
-			#form = self.session().value("jobpage_form")
-			form = self.__form
+		if self.session().hasValue("jobpage_form"):
+			form = self.session().value("jobpage_form")
 			form.retrieveFieldValues(self.request())
 		else:
 			self.setFormMessage("No form found.")
@@ -648,7 +589,6 @@ class JobPage(ApplicationSecurePage):
 		for uploadedFile in uploadedFiles:
 			self.onHandleUploadedFile(task, uploadedFile[0], uploadedFile[1])
 
-		task.refresh()
 		task.setup()
 
 		# Save the task for later reference
@@ -695,9 +635,7 @@ class JobPage(ApplicationSecurePage):
 		task = None
 		
 		if self.session().hasValue("jobpage_form"):
-			#if self.session().hasValue("jobpage_form"):
-			#form = self.session().value("jobpage_form")
-			form = self.__form
+			form = self.session().value("jobpage_form")
 			form.retrieveFieldValues(self.request())
 
 		if self.session().hasValue("jobpage_task"):
@@ -772,10 +710,7 @@ class JobPage(ApplicationSecurePage):
 		
 	# ----------------------------------------------------------------------
 	# JobPage Event methods (Callbacks)
-	# ----------------------------------------------------------------------
-	
-	def onAssignFormValues(self, task, form):
-		pass
+	# ----------------------------------------------------------------------			
 
 	def onCreateNewTask(self):
 		"""Return the task instance for derived JobPage class.
@@ -784,26 +719,24 @@ class JobPage(ApplicationSecurePage):
 		for example when a new job definition is created. (Must implement)"""
 		pass
 	
-	def onCreateNewJobForm(self, task=None):
+	def onCreateNewJobForm(self, task):
 		"""Return form used when creating a new job definition.
 		
 		The JobPage class provides a default job creation form asking
 		for the name of the new job definition. (Optional)"""
 		
-		form = Web.UiExt.Form(self, "newJobForm")
-		form.caption = "Create an %s job" % (task.getDescription())
+		form = Web.Ui.Form("newJobForm", self.onGetPageAddress(), "Create an %s job" % (task.getDescription()), width="26em")
 		
 		attribs = task.getAttributes()
 		xrslAttribs = task.getXRSLAttributes()
 		
-		jobName = Web.UiExt.TextField(self, "jobName", "Job name")
-		jobName.value = xrslAttribs["jobName"]
-		
-		form.add(jobName)
+		form.addBreak()
+		form.addText("Job name", "jobName", xrslAttribs["jobName"], width="20", labelWidth="12em")
+		form.addBreak()
 	
 		return form
 	
-	def onCreateEditJobForm(self, task=None):
+	def onCreateEditJobForm(self, task):
 		"""Return form used when editing an existing job definition.
 		
 		This method is called when an editing form is needed for editing

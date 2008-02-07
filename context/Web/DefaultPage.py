@@ -1,7 +1,7 @@
 #
 # DefaultPage base class module
 #
-# Copyright (C) 2007 Jonas Lindemann
+# Copyright (C) 2006 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,10 +30,10 @@ import string, os, re
 
 from HyperText.HTML import *
 
-import LapSite
-
 import Ui
-import UiExt
+import Lap.Utils
+
+import LapSite
 
 class DefaultPage(Page, FieldValidationMixin):
 	"""Abstract base class for all pages in the portal.
@@ -54,9 +54,6 @@ class DefaultPage(Page, FieldValidationMixin):
 		classParts = className.split("'")
 		classParts2 = classParts[1].split(".")
 		return classParts2[len(classParts2)-1]
-	
-	def expandPageLoc(self, pageName):
-		return "%s/%s/%s" % (self.request().adapterName(), LapSite.Application["ContextName"], pageName)
 	
 	def getProperty(self, key):
 		"""Return the value of the session property 'key'. If not
@@ -85,73 +82,10 @@ class DefaultPage(Page, FieldValidationMixin):
 			return self.session().value(key)
 		else:
 			return None
-		
-	def addExtControl(self, name, extControl):
-		self.__extControls.add(extControl)
-		self.__extControlDict[name] = extControl
-		
-	def addControl(self, name, control):
-		self.addExtControl(name, control)
-		
-	def getExtControl(self, name):
-		if self.__extControlDict.has_key(name):
-			return self.__extControlDict[name]
-		else:
-			return None
-		
-	def getControl(self, name):
-		return self.getExtControl(name)
-		
-	def hasExtControls(self):
-		return self.__extControls.controlCount>0
-	
-	def hasControls(self):
-		return self.hasExtControls()
 
 	# ----------------------------------------------------------------------
 	# Methods
-	# ----------------------------------------------------------------------
-	
-	def uploadFile(self, fieldName, destDir):
-		"""Handles a HTTP file upload request from the
-		request file, fieldName, and copies it to the directory
-		specified by destDir."""
-		if self.request().hasField(fieldName):
-
-			filename = ""
-
-			ok = True
-			try:
-				f = self.request().field(fieldName)
-				fileContent = f.file.read()
-				
-				
-				if f.filename.find("\\")!=-1:
-					lapDebug("Explorer upload...")
-					
-					lastBackslash = f.filename.rfind("\\")
-					filename = f.filename[lastBackslash+1:]
-					lapDebug("modified filename = " + filename)
-				else:
-					filename = f.filename
-					
-				lapDebug("Upload filename = " + filename)
-				inputFile = file(os.path.join(destDir, filename), "w")
-				inputFile.write(fileContent)
-				inputFile.close()
-			except:
-				ok = False
-				pass
-			
-			if ok:
-				lapInfo("File, %s, uploaded to %s." % (filename, destDir))
-				return ok, filename
-			else:
-				return ok, ""
-			
-		else:
-			return False, ""
-	
+	# ----------------------------------------------------------------------		
 
 	def hasProperty(self, key):
 		"""Returns True if the page class has the property, 'key'."""
@@ -174,18 +108,9 @@ class DefaultPage(Page, FieldValidationMixin):
 		"""Returns the true workind directory of the application"""
 		return "%s/%s" % (LapSite.Dirs["AppWorkDir"], LapSite.Application["ContextName"])
 	
-	def redrawForm(self):
-		self.writeBody()
-		
-	def redraw(self):
-		self.writeBody()
-	
 	# ----------------------------------------------------------------------
 	# Overidden methods (WebKit)
-	# ----------------------------------------------------------------------
-	
-	def actions(self):
-		return Page.actions(self) + self.__extControls.actions
+	# ----------------------------------------------------------------------			
 	
 	def awake(self, transaction):
 		"""Servlet wake-up initialisation
@@ -196,61 +121,18 @@ class DefaultPage(Page, FieldValidationMixin):
 		Page.awake(self, transaction)
 
 		self.adapterName = self.request().adapterName()
-	
-	
-		self.__extControls = UiExt.Container(self)
-		self.__extControlDict = {}
 		
-		# northPanel = new Ext.Panel({region:'north', contentEl: 'north', height: 52, title: 'Lunarc Application Portal', split:true });
+		self.menuBar = Ui.MenuBar(self, self.pageLoc())
 		
-		self.__topPanel = UiExt.Panel(self, 'topPanel')
-		self.__topPanel.region = "north"
-		self.__topPanel.contentEl = "topPanel"
-		self.__topPanel.height = 52
-		self.__topPanel.title = "Lunarc Application Portal"
+		if self.onUseAlternateMenu():
+			self.menuBar.enableAlternateMenu()
+		else:
+			self.menuBar.disableAlternateMenu()
+			
+		self.menuBar.setPosition(0,90)
+		self.menuBar.setFullWidth(True)
 		
-		self.__mainPanel = UiExt.Panel(self, 'mainPanel')
-		self.__mainPanel.region = "center"
-		self.__mainPanel.contentEl = "mainPanel"
-		
-		# westPanel = new Ext.Panel({region:'west', id:'west-panel', split:true, width: 200, minSize: 175, maxSize: 400, collapsible: true, margins:'0 0 0 5', layout:'accordion', layoutConfig:{ animate:true }});
-		
-		self.__appPanel = UiExt.Panel(self, 'appPanel')
-		self.__appPanel.region = "west"
-		self.__appPanel.contentEl = "appPanel"
-		self.__appPanel.width = 200
-		self.__appPanel.maxSize = 400
-		self.__appPanel.minSize = 200
-		self.__appPanel.collapsible = True
-		self.__appPanel.layout = 'accordion'
-		self.__appPanel.animate = True
-		
-		# jobTypePanel = new Ext.Panel({title:'Job types', border:false, iconCls:'nav'});
-
-		# southPanel = new Ext.Panel({region:'south', contentEl: 'south', split:true, height: 30, collapsible: true, margins:'0 0 0 0'});
-		
-		self.__bottomPanel = UiExt.Panel(self, 'bottomPanel')
-		self.__bottomPanel.region = "south"
-		self.__bottomPanel.contentEl = "bottomPanel"
-		self.__bottomPanel.height = 30
-		
-		self.__viewport = UiExt.Viewport(self, 'viewport')
-		self.__viewport.add(self.__topPanel)
-		self.__viewport.add(self.__mainPanel)
-		self.__viewport.add(self.__appPanel)
-		self.__viewport.add(self.__bottomPanel)
-		
-		self.__toolbar = UiExt.Toolbar(self, 'lapToolbar')
-
-		# Add menu bar as a special non renderable object to
-		# the ExtJS container object
-		
-		self.__extControls.addSystem(self.__toolbar)
-		self.__extControls.addSystem(self.__viewport)
-
-		self.onInitToolbar(self.__toolbar, self.adapterName)
-		self.onInitAppPanel(self.__appPanel, self.adapterName)
-		self.onInit(self.adapterName)
+		self.onInitMenu(self.menuBar, self.adapterName)
 		
 	def writeBody(self):
 		"""Write the body parts of the page
@@ -281,6 +163,11 @@ class DefaultPage(Page, FieldValidationMixin):
 		onAdditionalCSS(), onIncludeMenuJavaScript().
 		"""
 		
+		if self.onIncludeMenuCSS():
+			if self.onUseAlternateMenu():
+				pass
+			else:
+				self.writeln(LINK(rel="stylesheet",href=self.pageLoc()+"/transmenu/transmenu.css"))
 		if self.onIncludeLapCSS():
 			self.writeln(LINK(rel="stylesheet",href=self.pageLoc()+"/css/lap.css"))
 		if self.onIncludeUiCSS():
@@ -291,17 +178,12 @@ class DefaultPage(Page, FieldValidationMixin):
 		for css in extraCSS:
 			self.writeln(LINK(rel="stylesheet",href=self.pageLoc()+css))
 
+		if self.onIncludeMenuJavaScript():
+			self.menuBar.renderJavaScript()
+			
 		if self.onIncludeAdditionalJavaScript():
 			self.writeln(self.onGetAdditionalJavaScript())
-			
-		if self.onUseExtJS():
-			self.writeln(LINK(rel="stylesheet",href=self.pageLoc()+"/ext/resources/css/ext-all.css"))
-			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/adapter/ext/ext-base.js"))
-			self.writeln(SCRIPT(type="text/javascript", src=self.pageLoc()+"/ext/ext-all.js"))
-			
-		if self.onUseExtJS():
-			"""Render code needed for the ExtJS controls."""
-			self.writeln(SCRIPT(self.__extControls.renderJSToString(), type="text/javascript"))
+
 		
 	def htBodyArgs(self):
 		"""Provide body arguments for the page
@@ -309,71 +191,64 @@ class DefaultPage(Page, FieldValidationMixin):
 		if onUseMenu() returns True, routines for initialising the menubar
 		is added in the body arguments.
 		"""
-		return 'color=black bgcolor=white'
+		if self.onUseMenu():
+			if self.onUseAlternateMenu():
+				return 'color=black bgcolor=white onload="initjsDOMenu()"'
+			else:
+				return 'color=black bgcolor=white onload="init()"'
+		else:
+			return 'color=black bgcolor=white'
 		
 	def writeBodyParts(self):
 		"""Write the body parts of the page
 		
 		Writes the different parts of the portal page. Several routines
 		"""
+
+		if self.onUseLogo():
+			logoImage = LapSite.Appearance["LogoImage"]
+			logoImageWidth = LapSite.Appearance["LogoImageWidth"]
+			logoImageHeight = LapSite.Appearance["LogoImageHeight"]
+	
+			self.writeln(IMG(src="%s/%s" % (self.pageLoc(), logoImage),
+				style="position:absolute; left:0px; top:0px; width: %s; height: %s;"
+				% (logoImageWidth, logoImageHeight)))
+
+		if self.onUseMenu():
+		
+			if self.onUseAlternateMenu():
+				self.menuBar.enableAlternateMenu()
+			else:
+				self.menuBar.disableAlternateMenu()
+		
+			self.menuBar.render()	
+			self.menuBar.renderBodyJavaScript()
+
 		if self.onUseContentDiv():
-			self.writeln('<DIV id="%s" style="padding: 20px 20px 20px 20px;">' % "mainPanel")
-			if self.onUseExtJS():
-				print "Rendering EXT controls."
-				self.onBeforeRender(self.request().adapterName())
-				self.__extControls.render()
-				self.onAfterRender(self.request().adapterName())
-				if not self.hasExtControls():
-					self.writeContent()
-			else:
-				self.writeContent()
+			contentDivId = self.onGetContentDivId()
+		
+			self.writeln('<DIV id="%s">' % contentDivId)
+			self.writeContent()
 			self.writeln('</DIV>')
-			self.writeln('<DIV id="%s">' % "topPanel")
-			if self.onUseMenu():
-				self.__toolbar.render()
-			self.writeln('</DIV>')
-			
-			self.__appPanel.render()
-			
-			self.writeln('<DIV id="%s"><CENTER>Lunarc Application Portal 1.0</CENTER></DIV>' % "bottomPanel")
 		else:
-			if self.onUseExtJS():
-				print "Rendering EXT controls."
-				self.onBeforeRender(self.request().adapterName())
-				self.__extControls.render()
-				self.onAfterRender(self.request().adapterName())
-				if not self.hasExtControls():
-					self.writeContent()
-			else:
-				self.writeContent()
+			self.writeContent()
 
 			
 		if self.onUseTooltips():
+			
 			self.writeln(Ui.tooltipJavaScript)
 			
 	# ----------------------------------------------------------------------
 	# DefaultPage Event methods (Callbacks)
 	# ----------------------------------------------------------------------						
 			
-	def onInitAppPanel(self, appPanel, adapterName):
-		pass
-	
-	def onInitToolbar(self, toolbar, adapterName):
-		pass
-	
-	def onInit(self, adapterName):
-		"""This function is called when a servlet is woken up.
-		
-		Use this function to instanciate classes needed for servlet
-		operation."""
-		pass
-	
-	def onBeforeRender(self, adapterName):
-		pass
-	
-	def onAfterRender(self, adapterName):
-		pass
+	def onInitMenu(self, menuBar, adapterName):
+		"""This function is called when the menuBar is created.
 
+		Use the menuBar instance to fill the menu with menus.
+		"""
+		pass
+	
 	def onUseLogo(self):
 		"""Override to change logo behavior. 
 
@@ -390,11 +265,11 @@ class DefaultPage(Page, FieldValidationMixin):
 		"""Override to change tooltip behavior. 
 
 		Return False to disable tooltips. (Default True)"""
-		return False
+		return True
 	
 	def onGetContentDivId(self):
 		"""Return name of content div. Default "workarea"."""
-		return "centerPanel"
+		return "workarea"
 	
 	def onUseContentDiv(self):
 		"""Override to change content div usage. 
@@ -449,10 +324,6 @@ class DefaultPage(Page, FieldValidationMixin):
 	def onGetAdditionalJavaScript(self):
 		"""Override to add additional Javascript code to the page."""
 		return ""
-	
-	def onUseExtJS(self):
-		return True
-		
 
 
 

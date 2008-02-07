@@ -3,7 +3,7 @@
 #
 # Lunarc Application Portal Installer
 #
-# Copyright (C) 2006-2007 Jonas Lindemann
+# Copyright (C) 2006-2008 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,8 +39,8 @@ from Tkinter import *
 
 siteInstallDefaultParams = {
 	"TargetDir":"/opt",
-	"WebWareVersion":"0.9.2",
-	"LapVersion":"0.8.0-20061026",
+	"WebWareVersion":"0.9.4",
+	"LapVersion":"0.8.5",
 	"LapAppDirName":"lap"
 }
 
@@ -57,7 +57,7 @@ siteConfigDefaultParams = {
 	"WebWareLogFile":"/var/log/lap/lap_ww.log",
 	"PluginDir":"/opt/lap/context/Plugins",
 	"SessionDir":"/var/spool/lap",
-	"WebWareDir":"/opt/Webware-0.9.2",
+	"WebWareDir":"/opt/Webware-0.9.4",
 	"AppWorkDir":"/opt/lap",
 	"DependsDir":"/opt/lap/depends",
 	"NorduGridDir":"/opt/nordugrid",
@@ -79,6 +79,7 @@ siteConfigDefaultDescriptions = {
 	"DependsDir":"Portal dependency installation directory",
 	"NorduGridDir":"NorduGrid ARC installation directory",
 	"VOAdmin":"Portal Virtual Organisation administrator",
+	"UserAdmin":"Portal user administrator",
 	"SMTPServer":"Default mail server",
 	"ServerUser":"Portal user id",
 	"ServerGroup":"Portal group id",
@@ -86,12 +87,12 @@ siteConfigDefaultDescriptions = {
 }
 
 siteConfigTemplate = """Application = {
-		"ContextName":"context"
+	"ContextName":"context"
 }
 
 Logging = {
-		"LogFile":"%(LogFile)s",
-		"WebWareLogFile":"%(WebWareLogFile)s"
+	"LogFile":"%(LogFile)s",
+	"WebWareLogFile":"%(WebWareLogFile)s"
 }
 
 Dirs = {
@@ -104,24 +105,27 @@ Dirs = {
 }
 
 Appearance = {
-		"WelcomeMessage":"Welcome to the LUNARC application portal",
-		"WebSiteName":"LUNARC",
-		"LogoImage":"images/logo.png",
-		"LogoImageWidth":"445px",
-		"LogoImageHeight":"86px"
+	"WelcomeMessage":"Welcome to the LUNARC application portal",
+	"WebSiteName":"LUNARC",
+	"LogoImage":"images/logo.png",
+	"LogoImageWidth":"445px",
+	"LogoImageHeight":"86px"
 }
 
 Admin = {
-		"VOAdmin":"%(VOAdmin)s",
-		"VOSites":["130.235.7.91"]
+	"VOAdmin":"%(VOAdmin)s",
+	"VOSites":["130.235.7.91"],
+	"UserAdmin":"%(UserAdmin)s",
+	"UserSites":["130.235.7.91"],
+	"UserListEnabled":False
 }
 
 System = {
-		"SMTPServer":"%(SMTPServer)s",
-		"ServerUser":"%(ServerUser)s",
-		"ServerGroup":"%(ServerGroup)s",
-		"ServerPIDFile":"%(ServerPIDFile)s",
-        "ARCInterface":""
+	"SMTPServer":"%(SMTPServer)s",
+	"ServerUser":"%(ServerUser)s",
+	"ServerGroup":"%(ServerGroup)s",
+	"ServerPIDFile":"%(ServerPIDFile)s",
+	"ARCInterface":""
 }
 """
 

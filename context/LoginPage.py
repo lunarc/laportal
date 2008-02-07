@@ -25,11 +25,8 @@ from Web.ApplicationPage import ApplicationPage
 from MiscUtils.Funcs import uniqueId
 import string, types
 
-from HyperText.HTML import *
-
 import Web.Dialogs
 import Web.Ui
-import Web.UiExt
 
 class LoginPage(ApplicationPage):
 	"""Page providing the real login mechanicsm of the portal.
@@ -44,40 +41,11 @@ class LoginPage(ApplicationPage):
 	def htBodyArgs(self):
 		"""Add page body arguments for focusing on the password text box."""
 		return ApplicationPage.htBodyArgs(self) + ' onload="document.loginform.password.focus();"' % locals()
-	
-	def onInit(self, adapterName):
 
-		# Create login form
+	def writeContent(self):
+		"""Render page HTML."""
 		
-		extForm = Web.UiExt.Form(self, "loginform")
-		extForm.caption = "Login"
-		proxyFile = Web.UiExt.FileField(self, 'proxy', 'Proxy file')
-		extForm.add(proxyFile)
-		
-		self.__loginId = Web.UiExt.Hidden(self, 'loginid')
-		self.__loginId.value = 0
-		extForm.add(self.__loginId)
-		
-		buttonSet = Web.UiExt.ButtonSet(self, 'buttonSet')
-		loginButton = Web.UiExt.Button(self, 'login', 'Login')
-		loginButton.actionEnabled = False
-		buttonSet.add(loginButton)
-
-		extForm.add(buttonSet)
-		
-		self.addExtControl("loginform", extForm)
-		
-		messageBox = Web.UiExt.MessageBox(self, 'messageBox')
-		messageBox.visible = False
-		messageBox.URL = self.getPageName()
-		
-		self.addExtControl("messageBox", messageBox)
-		
-	def onBeforeRender(self, adapterName):
-		
-		loginid = uniqueId(self)
-		self.session().setValue('loginid', loginid)
-		self.__loginId.value = loginid
+		# Any messages to display ? 		
 
 		extra = self.request().field('extra', None)
 		
@@ -85,31 +53,37 @@ class LoginPage(ApplicationPage):
 			extra = 'You have been automatically logged out due to inactivity.'
 		
 		if extra:
-			messageBox = self.getExtControl("messageBox")
-			messageBox.visible = True
-			messageBox.message = self.htmlEncode(extra)
-			messageBox.URL = self.expandPageLoc("LoginPageDummy")
-			
-			loginForm = self.getExtControl("loginform")
-			loginForm.visible = False
-			
-	def onAfterRender(self, adapterName):
+			Web.Dialogs.messageBox(self, self.htmlEncode(extra))
+			self.writeln("<br>")
+			self.writeln("<br>")
+
+		# Create unique loginid			
+		
+		loginid = uniqueId(self)
+		self.session().setValue('loginid', loginid)
+
+		action = self.request().field('action', '')
+		
+		# Create login form		
+
+		form = Web.Ui.Form("loginform", action, "Login", "30em")
+
+		form.addBreak()
+		form.addFile("Proxy file", "proxy", "", "16em")
+		form.addHidden("", "loginid", loginid)
+		form.setAction(action)
+		form.addBreak()
+		form.setSubmitButton("login", "Login")
 
 		# Forward any passed in values to the user's intended page after successful login,
 		# except for the special values used by the login mechanism itself
-
-		for fieldName, fieldValue in self.request().fields().items():
-			if fieldName not in 'login loginid proxy extra logout'.split():
-				if isinstance(fieldValue, types.ListType):
-					for valueStr in fieldValue:
-						self.writeln(INPUT(type="hidden", name=fieldName, value=valueStr))
+		
+		for name, value in self.request().fields().items():
+			if name not in 'login loginid proxy extra logout'.split():
+				if isinstance(value, types.ListType):
+					for valueStr in value:
+						form.addHidden("", name, valueStr)
 				else:
-						self.writeln(INPUT(type="hidden", name=fieldName, value=fieldValue))
-		
-		
-		
+					form.addHidden("", name, value)
 
-	def writeContent(self):
-		"""Render page HTML."""
-		
-		pass
+		form.render(self)

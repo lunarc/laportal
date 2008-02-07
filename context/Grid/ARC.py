@@ -1,7 +1,7 @@
 #
 # ARC middleware interface module
 #
-# Copyright (C) 2006-2007 Jonas Lindemann
+# Copyright (C) 2006-2008 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,11 +20,7 @@
 
 """ARC middleware interface module."""
 
-import os, sys, string, commands, pickle
-
-from WebKit.AppServer import globalAppServer
-
-from threading import *
+import os, sys, string, commands, threading
 
 import Security
 import Web.Utils
@@ -35,161 +31,7 @@ import LapSite
 import arclib
 
 from Lap.Log import *
-from Lap.uuid import *
 
-
-class JobList:
-	__managedJobListsLock = Lock()
-	__managedJobLists = {}
-	def __init__(self, jobListFilename):
-		JobList.__managedJobListsLock.acquire()
-	
-		if JobList.__managedJobLists.has_key(jobListFilename):
-			self._jobListLock = Lock()
-		else:
-			self._jobListLock = Lock()
-			JobList.__managedJobLists[jobListFilename] = jobListFilename
-		#finally:
-		JobList.__managedJobListsLock.release()
-		
-		self._jobListFilename = jobListFilename		
-		
-	def update(self, threadId, status, jobId="", exitCode=0, name="", errorText=[]):
-		
-		# Make sure no one writes to the joblist file.
-		
-		try:
-			self._jobListLock.acquire()
-		
-			# If no joblist file exists we create one.
-			
-			print "Job list file =", self._jobListFilename
-	
-			if not os.path.exists(self._jobListFilename):
-				print "No job list found, creating a new..."
-				jobList = {}
-				jobListFile = file(self._jobListFilename, "w")
-				pickle.dump(jobList, jobListFile)
-				jobListFile.close()
-				
-			# Load jobList
-				
-			print "Load job list..."
-			jobListFile = file(self._jobListFilename, "r")
-			jobList = pickle.load(jobListFile)
-			jobListFile.close()
-			
-			# Update jobList
-			
-			print "Update job list..."
-			jobList[threadId] = [status, jobId, exitCode, name, errorText]
-			
-			# Dump jobList
-			
-			print "Save job list..."
-			jobListFile = file(self._jobListFilename, "w")
-			pickle.dump(jobList, jobListFile)
-			jobListFile.close()
-		finally:
-			self._jobListLock.release()
-			
-	def get(self):
-		
-		jobList = None
-
-		try:
-			self._jobListLock.acquire()
-		
-			# If no joblist file exists we create one.
-			
-			print "Job list file =", self._jobListFilename
-	
-			if not os.path.exists(self._jobListFilename):
-				print "No job list found, creating a new..."
-				jobList = {}
-				jobListFile = file(self._jobListFilename, "w")
-				pickle.dump(jobList, jobListFile)
-				jobListFile.close()
-				
-			# Load jobList
-				
-			print "Load job list..."
-			jobListFile = file(self._jobListFilename, "r")
-			jobList = pickle.load(jobListFile)
-			jobListFile.close()
-			
-		finally:
-			self._jobListLock.release()
-			
-		return jobList
-			
-
-class SubmitThread(Thread):
-	def __init__(self, jobList, jobName=""):
-		Thread.__init__(self)
-		
-		self._jobList = jobList
-		self._jobName = jobName
-		self._startDir = ""
-		self._xrslFilename = ""
-		self._cluster = ""
-		self._proxyFilename = ""
-		
-	def setXrslFilename(self, xrslFile):
-		self._xrslFilename = xrslFilename
-		
-	def setCluster(self, cluster):
-		self._cluster = cluster
-		
-	def setProxyFilename(self, proxyLocation):
-		self._proxyFilename = proxyLocation
-		
-	def setStartDir(self, startDir):
-		self._startDir = startDir
-		
-	def setJobName(self, jobName):
-		self._jobName = jobName
-
-	def	run(self):
-		
-		jobId = ""
-		exitCode = 0
-		
-		print self.getName() + " - Running..."
-		self._jobList.update(self.getName(), "SUBMITTING", "", 0, self._jobName)
-		
-		print "proxy =", self._proxyFilename
-		
-		if self._startDir == "":
-			print "Executing :"+"X509_USER_PROXY=%s ngtest -J 1 -c sigrid.lunarc.lu.se" % self._proxyFilename
-			exitCode, output = commands.getstatusoutput("X509_USER_PROXY=%s ngtest -J 1 -c sigrid.lunarc.lu.se" % self._proxyFilename)
-		else:
-			print "Executing :"+"cd %s; X509_USER_PROXY=%s ngtest -J 1 -c sigrid.lunarc.lu.se" % (self._startDir, self._proxyFilename)
-			exitCode, output = commands.getstatusoutput("cd %s; X509_USER_PROXY=%s ngtest -J 1 -c sigrid.lunarc.lu.se" % (self._startDir, self._proxyFilename))
-		
-		print
-		print "----------------------"
-		print output
-		print "----------------------"
-		print 
-		
-		outputLines = output.split("\n")
-		for line in outputLines:
-			if line.find("Job submitted with jobid:")!=-1:
-				splitIndex = line.find(":")
-				jobId = line[splitIndex+1:].strip()
-
-		if jobId!="":
-			print self.getName() + " - Submitted job =", jobId
-			self._jobList.update(self.getName(), "SUBMITTED", jobId, exitCode, self._jobName)
-		else:
-			print self.getName() + " - Job submission failed. (ExitCode =", exitCode, ")"
-			print "----------------- REASON ---------------------"
-			for line in outputLines:
-				print line
-			print "----------------- REASON ---------------------"
-			self._jobList.update(self.getName(), "FAILED", "", exitCode, self._jobName, outputLines)
-			
 class Ui:
 	"""ARC middleware user interface class."""
 	_sharedState = {}
@@ -197,7 +39,7 @@ class Ui:
 		"""Class constructor"""
 		self.__dict__ = self._sharedState
 		
-		self._arclibLock = Lock()
+		self._arclibLock = threading.Lock()
 
 		self._user = user
 		self._proxy = Security.Proxy(self._user.getProxy())
@@ -521,7 +363,10 @@ class Ui:
 				return False
 			
 			[jobDir, filename] = os.path.split(xrslFilename)
-							
+			
+			#oldDir = os.getcwd()
+			#os.chdir(jobDir, force=True)
+			
 			commandLine = "ngsub -d %d -t %d -f %s" % (self._debugLevel, self._user.getSubmitTimeout(), xrslFilename)
 			
 			if len(self._user.getPreferredClusters())>0:
@@ -531,8 +376,13 @@ class Ui:
 			if len(self._user.getRejectedClusters())>0:
 				for cluster in self._user.getRejectedClusters():
 					commandLine = commandLine + " -c -" + cluster
-
+					
+			#if self._user.getPreferredCluster() != "":
+			#	commandLine = commandLine + " -c " + self._user.getPreferredCluster()
+			
 			resultVal, result = Lap.System.getstatusoutput(commandLine, self._env, jobDir)
+			
+			#os.chdir(oldDir, force=True)
 			
 			jobIds = []
 			errorMessage = ""
@@ -544,35 +394,6 @@ class Ui:
 					
 			return [resultVal, jobIds]
 	
-	def threadedSubmit(self, xrslFilename, jobName=""):
-		"""Submit xrsl file as job to available ARC resources.
-		
-		@type  xrslFilename: string
-		@param xrslFilename: Filename containing a job description in XRSL.
-		@rtype list:
-		@return: list containing [resultVal, jobIds] resultVal is the return
-		code of the ARC command, jobIds is a list of jobID strings."""
-		
-		
-		if not os.path.isfile(xrslFilename):
-			return False
-		
-		[jobDir, filename] = os.path.split(xrslFilename)
-		
-		# Create an instance of the user job list database 
-		
-		jobListFilename = os.path.join(self._user.getDir(),"jobList.db")
-		jobList = JobList(jobListFilename)
-		
-		# Create thread for job submission
-		
-		submitThread = SubmitThread(jobList)
-		submitThread.setName(uuid4())
-		submitThread.setJobName(jobName)
-		submitThread.setProxyFilename(self._env["X509_USER_PROXY"])
-		submitThread.setStartDir(jobDir)
-		submitThread.start()
-			
 	def ls(self, url):
 		"""List files at a specific URL.
 		
