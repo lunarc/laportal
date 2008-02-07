@@ -24,7 +24,7 @@ from Web.ApplicationPage import ApplicationPage
 from MiscUtils.Funcs import uniqueId
 import string, types
 
-import Web.UiExt
+import Web.Dialogs
 
 class LogoutPage(ApplicationPage):
 	"""Page for displaying a logout confirmation. Clicking OK returns to the
@@ -33,12 +33,11 @@ class LogoutPage(ApplicationPage):
 	def title(self):
 		"""Return page title."""
 		return 'Log Out'
-	
-	def onInit(self, adapterName):
-		messageBox = Web.UiExt.MessageBox(self, 'messageBox')
-		messageBox.message = "You have been logged out."
-		messageBox.URL = self.expandPageLoc("WelcomePage")
-		self.addExtControl("messageBox", messageBox)
-		
-	def onAfterRender(self, adapterName):
+
+	def writeContent(self):
+		"""Render page HTML."""
+
+		adapterName = self.request().adapterName()		
 		self.session().invalidate()
+		Web.Dialogs.messageBox(self, "You have been logged out.", "Information", "%s/context/WelcomePage" % adapterName)
+

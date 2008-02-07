@@ -1,7 +1,7 @@
 export LD_LIBRARY_PATH=/opt/nordugrid/lib:/opt/nordugrid/lib/python2.3/site-packages:/opt/globus/lib
-export PYTHONPATH=/sw/Webware-0.9:/sw/lap-develop/context:/opt/nordugrid/lib/python2.3/site-packages:/sw/lap-develop/depends:/sw/lap-develop/LapConfig
+export PYTHONPATH=/sw/Webware-0.9:/sw/lap/context:/opt/nordugrid/lib/python2.3/site-packages:/sw/lap/depends:/sw/lap/LapConfig
 
 rm -rf ./html
-epydoc -v --html --graph all -o ./html --name "Lunarc Application Portal (trunk)" ../context/
+epydoc -v --graph all --html -o ./html --name "Lunarc Application Portal" ../context
 
 

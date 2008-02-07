@@ -18,11 +18,10 @@ appWorkPath = LapSite.Dirs["AppWorkDir"]
 extraPath   = LapSite.Dirs["DependsDir"]
 contextPath = os.path.join(appWorkPath, lapContext)
 
-# Setup arclib
+# Setup arclib search paths
 
 arclibPath = os.path.join(LapSite.Dirs["NorduGridDir"], "lib")
 arclibPythonPath = os.path.join(LapSite.Dirs["NorduGridDir"], "lib/python2.3/site-packages")
-
 sys.path.append(arclibPythonPath)
 
 libraryDirs = [contextPath, extraPath]
@@ -46,6 +45,6 @@ Launch.user = user
 Launch.group = group
 
 if __name__ == '__main__':
-
 	Launch.main()
+	
 

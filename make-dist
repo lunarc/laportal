@@ -8,37 +8,35 @@ FIND_OPTS='-type f'
 
 DATE_TAG=`date +'%Y%m%d'`
 
-CONTEXT_DIR='./context'
-PLUGIN_DIR='./context/Plugins'
-IMAGE_DIR='./context/images'
-ICON_DIR='./context/icons'
-CSS_DIR='./context/css'
-PATCH_DIR='./patches'
-INIT_DIR='./init'
-CONFIG_DIR='./LapConfig'
+CONTEXT_DIR='context'
+PLUGIN_DIR='context/Plugins'
+IMAGE_DIR='context/images'
+CSS_DIR='context/css'
+PATCH_DIR='patches'
+INIT_DIR='init'
+CONFIG_DIR='LapConfig'
 ROOT_DIR='.'
-JSMENU_DIR='./context/jsmenubar'
+JSMENU_DIR='context/jsmenubar'
 
-DIST_DIR='../lap-dist'
+DIST_DIR='/sw/lap-dist'
 
-find $PLUGIN_DIR $FIND_OPTS | grep -v '.pyc' > pluginFiles
-find $CONTEXT_DIR $FIND_OPTS | grep -v $PLUGIN_DIR | grep -v $IMAGE_DIR | grep -v $ICON_DIR | grep -v $CSS_DIR | grep -v '.pyc' | grep -v $JSMENU_DIR | grep -v $JSMENU_DIR > sourceFiles
-find $PATCH_DIR $FIND_OPTS >> sourceFiles
-find $IMAGE_DIR $FIND_OPTS > layoutFiles
-find $CSS_DIR $FIND_OPTS >> layoutFiles
-find $ICON_DIR $FIND_OPTS >> layoutFiles
-find $INIT_DIR $FIND_OPTS > configFiles
-find $CONFIG_DIR $FIND_OPTS >> configFiles
+find $PLUGIN_DIR $FIND_OPTS | grep -v '.pyc' | grep -v '.svn' > pluginFiles
+find $CONTEXT_DIR $FIND_OPTS | grep -v $PLUGIN_DIR | grep -v $IMAGE_DIR | grep -v $CSS_DIR | grep -v '.pyc' | grep -v '.svn' | grep -v $JSMENU_DIR | grep -v $JSMENU_DIR > sourceFiles
+find $PATCH_DIR $FIND_OPTS | grep -v '.svn' >> sourceFiles
+find $IMAGE_DIR $FIND_OPTS | grep -v '.svn' > layoutFiles
+find $CSS_DIR $FIND_OPTS | grep -v '.svn' >> layoutFiles
+find $INIT_DIR $FIND_OPTS | grep -v '.svn' > configFiles
+find $CONFIG_DIR $FIND_OPTS | grep -v '.svn' >> configFiles
 echo start-lap >> configFiles
 echo lapversion >> configFiles
 echo make-dist >> configFiles
 echo Launch.py >> configFiles
 echo install-depends >> configFiles
 
-tar cvzf $DIST_DIR/lap-source-$LAP_VERSION-$DATE_TAG.tar.gz --files-from ./sourceFiles
-tar cvzf $DIST_DIR/lap-plugins-$LAP_VERSION-$DATE_TAG.tar.gz --files-from ./pluginFiles
-tar cvzf $DIST_DIR/lap-layout-$LAP_VERSION-$DATE_TAG.tar.gz --files-from ./layoutFiles
-tar cvzf $DIST_DIR/lap-config-$LAP_VERSION-$DATE_TAG.tar.gz --files-from ./configFiles
+tar cvzf $DIST_DIR/lap-source-$LAP_VERSION.tar.gz --files-from ./sourceFiles
+tar cvzf $DIST_DIR/lap-plugins-$LAP_VERSION.tar.gz --files-from ./pluginFiles
+tar cvzf $DIST_DIR/lap-layout-$LAP_VERSION.tar.gz --files-from ./layoutFiles
+tar cvzf $DIST_DIR/lap-config-$LAP_VERSION.tar.gz --files-from ./configFiles
 
 rm sourceFiles
 rm pluginFiles

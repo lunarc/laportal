@@ -7,21 +7,21 @@
 	/*margin: 0 auto; /* center for now */*/
 	/* ems so it will grow */
 	width: 20em;
-	background: url(/lap-develop/context/images/lunarc-sbbody-r.gif) no-repeat bottom right;
+	background: url(/lap/context/images/lunarc2-sbbody-r.png) no-repeat bottom right;
 	font-size: 100%;
 	margin-left: auto;
     margin-right: auto;	
 }
 .lapWindowHead {
-	background: url(/lap-develop/context/images/lunarc-sbhead-r.gif) no-repeat top right;
+	background: url(/lap/context/images/lunarc2-sbhead-r.png) no-repeat top right;
 	margin: 0;
 	padding: 0;
 	text-align: center;
 }
 .lapWindowHead h2 {
-	background: url(/lap-develop/context/images/lunarc-sbhead-l.gif) no-repeat top left;
+	background: url(/lap/context/images/lunarc2-sbhead-l.png) no-repeat top left;
 	margin: 0;
-	padding: 4px 30px 5px;
+	padding: 14px 30px 5px;
 	color: white; 
 	font-weight: bold; 
 	font-size: 1em; 
@@ -29,9 +29,9 @@
 	text-shadow: rgba(0,0,0,.4) 0px 2px 5px; /* Safari-only, but cool */
 }
 .lapWindowBody {
-	background: url(/lap-develop/context/images/lunarc-sbbody-l.gif) no-repeat bottom left;
+	background: url(/lap/context/images/lunarc2-sbbody-l.png) no-repeat bottom left;
 	margin: 0;
-	padding: 0.5em 1.5em 1.5em 1em;
+	padding: 0.5em 2em 1.5em 1.5em;
 	font-size:100%;
 }
 
@@ -54,8 +54,9 @@ form fieldset {
   font-size: 100%;
   padding: 0.5em 0.5em 0.5em 0.5em;
   margin: 0.5em 0.5em 0.5em 0.5em;
-  border:1px solid;
+  border:2px solid;
   display: block;
+  color: #7b9ac0;
 }
 
 form fieldset legend {
@@ -64,27 +65,27 @@ form fieldset legend {
   font-weight: bold;
 }
 
-/*
 label {
   font-size: 100%;
   width: 8em;
   float: left;
   text-align: right;
   margin: 0 1em 0 0;
-  clear: both
+  clear: both;
+  color: #000000;
 }
 
 label u {
   font-style: normal;
   text-decoration: underline;
 }
+
 input, select, textarea {
   font-family: Tahoma, Arial, sans-serif;
   font-size: 100%;
   color: #000000;
   margin-bottom: 0.5em;
 }
-*/
 
 textarea {
   overflow: auto;

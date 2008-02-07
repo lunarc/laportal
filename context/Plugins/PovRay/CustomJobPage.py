@@ -76,13 +76,6 @@ class CustomJobPage(JobPage):
 		form.addText("Antialias depth", "antialiasDepth", attribs["antialiasDepth"], fieldType="float")
 		form.endFieldSet()
 		
-		form.beginFieldSet("Test")
-		form.addRadio("A","rbA", "1")
-		form.addRadio("B","rbA", "2")
-		form.addRadio("C","rbA", "3")
-		form.addRadio("D","rbA", "4")
-		form.endFieldSet()
-		
 		form.beginFieldSet("PovRay mainfile")
 		form.addFile("Povray script", "povFile", "")
 		form.addBreak()

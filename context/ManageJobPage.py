@@ -1,7 +1,7 @@
 #
 # ManageJobPage
 #
-# Copyright (C) 2006-2007 Jonas Lindemann
+# Copyright (C) 2006-2008 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -246,6 +246,8 @@ class ManageJobPage(ApplicationSecurePage):
 			else:
 				jobNameList = jobNames
 				
+			self.pleaseWait("Submitting job(s)...")
+			
 			submittedJobIds = []
 			
 			# Submit all selected jobs
@@ -261,10 +263,22 @@ class ManageJobPage(ApplicationSecurePage):
 				taskFile.close()
 				
 				ARC = Grid.ARC.Ui(user)
-				ARC.threadedSubmit(os.path.join(jobDir,"job.xrsl"), jobName)
+				resultVal, jobIds = ARC.submit(os.path.join(jobDir,"job.xrsl"))
 				
-			self.setFormStatus("Job submission for selected jobs have been started.")
-			self.writeBody()
+				if len(jobIds)>0:
+					for jobId in jobIds:
+						submittedJobIds.append(jobId)
+	
+			if len(submittedJobIds)>0:
+				message = "Submitted the following job(s):<br><br>"
+				for jobId in submittedJobIds:
+					lapInfo("Job %s submitted." % jobId)
+					message = message + jobId + "<br>"
+			else:
+				lapWarning("Job(s) could not be submitted.")
+				message = "Could not find any resources to submit the job."
+
+			self.setFormStatus(message)
 		else:
 			self.setFormStatus("A job must be selected.")
 			self.writeBody()
@@ -273,11 +287,12 @@ class ManageJobPage(ApplicationSecurePage):
 		"""Initiate job definition deletion (action).
 		
 		This action will show a confirmation dialog, calling the deleteJobYes
-		action if the user confirms the dialog."""
+		action if the user confirms the dialog."""		
 		
 		if self.request().hasValue("chkJob"):
 			self.confirm("Are you sure?", "Delete job", "", "")
-			self.session().setValue("managejob_deletejob", self.getString(self.request(),"chkJob"))
+			jobNames = self.request().field("chkJob")
+			self.session().setValue("managejob_deletejob", jobNames)
 			self.writeBody()
 		else:
 			self.setFormStatus("A job must be selected.")
@@ -304,10 +319,13 @@ class ManageJobPage(ApplicationSecurePage):
 				if jobNames == "":
 					return
 				
-				jobDir = os.path.join(userDir, "job_%s" % jobNames)
-			
+				# Clean jobname string
+				
+				jobNames = self.safeString(jobNames)
+				
 				# Delete job directory
-			
+				
+				jobDir = os.path.join(userDir, "job_%s" % jobNames)			
 				shutil.rmtree(jobDir, True)
 			
 			else:
@@ -319,12 +337,13 @@ class ManageJobPage(ApplicationSecurePage):
 			
 				for jobName in jobNames:
 					
-					print jobName
-				
-					jobDir = os.path.join(userDir, "job_%s" % jobName)
+					# Clean job name string
+					
+					safeJobName = self.safeString(jobName)
 				
 					# Delete job directory
 				
+					jobDir = os.path.join(userDir, "job_%s" % safeJobName)
 					shutil.rmtree(jobDir, True)
 				
 			self.writeBody()

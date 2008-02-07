@@ -12,7 +12,7 @@ Logging = {
 Dirs = {
     "PluginDir":"/sw/lap/context/Plugins",
     "SessionDir":"/var/spool/lap",
-    "WebWareDir":"/sw/Webware-0.9.2",
+    "WebWareDir":"/sw/Webware-0.9.3",
     "AppWorkDir":"/sw/lap",
     "DependsDir":"/sw/lap/depends",
     "NorduGridDir":"/opt/nordugrid"
@@ -28,7 +28,10 @@ Appearance = {
 
 Admin = {
 	"VOAdmin":"/O=Grid/O=NorduGrid/OU=byggmek.lth.se/CN=Jonas Lindemann",
-	"VOSites":["130.235.7.91"]
+	"VOSites":["130.235.7.91"],
+	"UserAdmin":"/O=Grid/O=NorduGrid/OU=byggmek.lth.se/CN=Jonas Lindemann",
+	"UserSites":["130.235.7.91"],
+	"UserListEnabled":False
 }
 
 System = {

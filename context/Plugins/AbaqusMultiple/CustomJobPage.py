@@ -45,10 +45,11 @@ class CustomJobPage(JobPage):
 		xrslAttribs = task.getXRSLAttributes()
 		
 		form.beginFieldSet("ABAQUS input files")
-		form.beginSelect("Input files", "inputFiles", size=10, width="22em")
+		form.beginSelect("Input files", "inputFiles", size=8, width="20em")
 		for inputFile in attribs["inputFiles"]:
 				form.addOption(inputFile)
 		form.endSelect()
+		form.addBreak()
 		form.addFile("Add input file(s)", "addInputFile", "inputFile")
 		form.addBreak()
 		form.addBreak()

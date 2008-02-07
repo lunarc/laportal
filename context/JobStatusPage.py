@@ -22,9 +22,14 @@
 
 from Web.ApplicationSecurePage import ApplicationSecurePage
 from MiscUtils.Funcs import uniqueId
-import string, types, time, os
+import string, types, time
 
-from HyperText.HTML import *
+jobRunningColor   = "51, 204, 0"
+jobQueuingColor   = "255, 204, 0"
+jobAcceptedColor  = "0, 204, 204"
+jobDeletedColor   = "204, 0, 0"
+jobFinishingColor = "51, 204, 0"
+jobFinishedColor  = "51, 204, 0"
 
 import Web.Dialogs
 import Web.Ui
@@ -36,56 +41,44 @@ class JobStatusPage(ApplicationSecurePage):
 	def title(self):
 		return 'Job status'
 
-	def onInit(self, adapterName):
-		"""Initialise page."""
-		self._dialog = Web.Ui.ExtBasicDialog(self, "extdialog", width=800, height=400)
-		self.addExtControl(self._dialog)
-		self._grid = Web.Ui.ExtGrid(self, "extgrid", 6, 6)
-		self.addExtControl(self._grid)
-	
-	def onUseTooltips(self):
-		return False
-	
-	def onUseExtJS(self):
-		return True
-	
 	def writeContent(self):
-		
-		# Get user information
-		
 		user = Lap.Session.User(self.session().value('authenticated_user'))
 		ui = Grid.ARC.Ui(user)
+		jobs = ui.jobStatus()
 		
-		# Get user job list database
-		
-		jobListFilename = os.path.join(user.getDir(),"jobList.db")
-		jobList = Grid.ARC.JobList(jobListFilename)
-		jobDict = jobList.get()
-		
-		# Create a grid representing the job list database
-		
-		self._grid.setSize(len(jobDict.keys()), 5)
-		self._grid.setHeaders(["Status", "Job id", "Exit code", "Job name", "Information"])
-		
-		row = 0
-		
-		for key in jobDict.keys():
-			self._grid.setItems(row, [jobDict[key][0], jobDict[key][1], jobDict[key][2], jobDict[key][3]])
-			content = ""
-			if len(jobDict[key][4])>0:
-				for line in jobDict[key][4]:
-					content = content + line + "<br>"
-					
-				print content
-				self._grid.setItem(row, 4, content)
-				
-			row += 1
+		if jobs==None:
+			Web.Dialogs.messageBox(self, "grid-proxy is about to expire please create a new proxy.", "Manage running jobs")
+		else:
+
+			table = Web.Ui.Table(len(jobs)+1,4)
+			table.setItem(0, 0, "ID")
+			table.setItem(0, 1, "Name")
+			table.setItem(0, 2, "Status")
+			table.setItem(0, 3, "Error")
+	
+			row = 1		
+	
+			for key in jobs.keys():
+				table.setItem(row,0,key)
+				table.setItem(row,1,jobs[key]["name"])
+				if jobs[key]["status"] == "INLRMS: Q":
+					table.setColor(row,2, jobQueuingColor)
+				if jobs[key]["status"] == "INLRMS: wait":
+					table.setColor(row,2, jobQueuingColor)
+				if jobs[key]["status"] == "INLRMS: R":
+					table.setColor(row,2, jobRunningColor)
+				if jobs[key]["status"] == "ACCEPTED":
+					table.setColor(row,2, jobAcceptedColor)
+				if jobs[key]["status"] == "DELETED":
+					table.setColor(row,2, jobDeletedColor)
+				if jobs[key]["status"] == "FINISHING":
+					table.setColor(row,2, jobFinishingColor)
+				if jobs[key]["status"][0:8] == "FINISHED":
+					table.setColor(row,2, jobFinishedColor)
+				table.setItem(row,2,jobs[key]["status"])
+				if jobs.has_key("error"):
+					table.setItem(row,3,jobs[key]["error"])
+				row = row + 1
 			
-		# Render grid
-		
-		grid = self._grid.renderToTag()
-		self._dialog.setContent(grid)
-		dialog = self._dialog.renderToTag()
-			
-		self.writeln(dialog)
-				
+			table.render(self)
+

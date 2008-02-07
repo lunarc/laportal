@@ -1,7 +1,7 @@
 #
 # Security module
 #
-# Copyright (C) 2006 Jonas Lindemann
+# Copyright (C) 2006-2008 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,12 +48,24 @@ class FieldValidationMixin:
                 cleanString = re.sub("""[\\\;<>\*\|`&$!#()\[\]\{\}:'"/\\n]+""","", inputString)
                 return cleanString
 
+        def safeStringWithDot(self, inputString):
+                """Removes unwanted characters from the inputString parameter. The
+                routine removes linebreaks and keeps dots."""
+                cleanString = re.sub("""[\\\;<>\*\|`&$!#()\[\]\{\}:'"/\\n]+""","", inputString)
+                return cleanString
+
         def safeMultiStringWidthDot(self, inputString):
                 """Removes unwanted characters from the inputString parameter. The
                 routine keeps linebreaks and dots."""
                 cleanString = re.sub("""[\\\;<>\*\|`&$!#()\[\]\{\}:'"/]+""","", inputString)
                 return cleanString
         
+        def safeMultiStringWithDot(self, inputString):
+                """Removes unwanted characters from the inputString parameter. The
+                routine keeps linebreaks and dots."""
+                cleanString = re.sub("""[\\\;<>\*\|`&$!#()\[\]\{\}:'"/]+""","", inputString)
+                return cleanString
+
         def safeURLString(self, inputString):
                 """Removes unwanted characters from the inputString parameter. The
                 routine preserves characters used in a valid URL."""

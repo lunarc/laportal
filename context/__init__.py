@@ -1,7 +1,7 @@
 #
 # SessionMixIn
 #
-# Copyright (C) 2006-2007 Jonas Lindemann
+# Copyright (C) 2006-2008 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@ from MiscUtils.MixIn import MixIn
 from WebKit.Session import Session
 
 import os, logging, time, stat
+
+import LapSite
+import Lap.Log
 
 class SessionMixIn:
 	"""Special class for updating the Session class with routines for expiring
@@ -90,3 +93,6 @@ class SessionMixIn:
 # Now inject the methods from SessionMixIn into Session
 MixIn(Session, SessionMixIn)
 
+# Setup logging
+
+Lap.Log.lapSetupLogging()
