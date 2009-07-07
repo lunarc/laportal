@@ -1,0 +1,4 @@
+#!/bin/sh
+export ARCGUI_LOCATION=/sw/laportal/arcgui
+export PYTHONPATH=$PYTHONPATH:/sw/laportal/arcgui
+python $ARCGUI_LOCATION/arcgui.py
