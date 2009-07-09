@@ -162,9 +162,24 @@ class SecurePage(DefaultPage):
             DefaultPage.respond(self, trans)
 
     def isValidUserAndPassword(self, username, password):
-        userMgr = RoleUserManagerToFile()
-        userMgr.setUserDir("/var/spool/lap")
-        return userMgr.loginName(username, sha.sha(password).hexdigest())!=None
+        """
+        Validate user and password. Each user directory
+        contains a user.passwd file containing the password
+        hash for the user.
+        """
+        
+        userDir = os.path.join(LapSite.Dirs["SessionDir"],username)
+        userPasswdFilename = os.path.join(userDir,"user.passwd")
+        
+        if os.path.exists(userPasswdFilename):
+            userPasswdFile = open(userPasswdFilename,"r")
+            passwordHash = userPasswdFile.readline().strip()
+            userPasswdFile.close()
+            
+            if passwordHash==sha.sha(password).hexdigest():
+                return True
+            
+        return False
 
     def loginUser(self, username, password):
 
@@ -178,7 +193,6 @@ class SecurePage(DefaultPage):
             self.session().setValue('authenticated_user', username)
             return 1
         else:
-            self.session().delValue('authenticated_user')
             return 0
 
     def loggedInUser(self):

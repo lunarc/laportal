@@ -1,6 +1,6 @@
 #!/bin/env python
 
-import os, sys, sha
+import os, sys, sha, getpass
 
 from optparse import OptionParser
 
@@ -13,17 +13,45 @@ configTemplate = """<?xml version="1.0" encoding="utf-8"?>
   <CACertificatePath>/etc/grid-security/certificates</CACertificatePath>
 </ArcConfig>"""
 
-sys.path.append("/sw/pkg/Webware-1.0.1")
-
-from UserKit.RoleUserManagerToFile import RoleUserManagerToFile
-
-def userExists(userName, userMgr):
-       
-    for user in userMgr.users():
-        if user.name() ==  userName:
-            return True
-
-    return False    
+def userExists(userName, sessionDir="/var/spool/lap"):
+    """
+    Check if a username already is created.
+    """
+    
+    userDir = os.path.join(sessionDir, userName)
+    
+    if os.path.exists(userDir):
+        return True
+    else:
+        return False
+    
+def createUser(userName, passwordHash, sessionDir="/var/spool/lap"):
+    """
+    Create user directory and configuration files.
+    """
+    
+    # Create user directory
+    
+    userDir = os.path.join(sessionDir, userName) 
+    os.mkdir(userDir)
+    
+    # Create user.passwd file
+    
+    userPasswdFilename = os.path.join(userDir,"user.passwd")
+    
+    userPasswdFile = open(userPasswdFilename, "w")
+    userPasswdFile.write(passwordHash)
+    userPasswdFile.close()
+    
+    os.chmod(userPasswdFilename, 0600)
+    
+    # Create template configuration file
+    
+    configFilename = os.path.join(userDir,"client.xml")
+    configFile = open(configFilename, "w")
+    configFile.write(configTemplate)
+    configFile.close()    
+    
 
 if __name__ == "__main__":
     
@@ -36,7 +64,6 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
            
     if options.reset:
-        pass
         sys.exit(0)
         
     # If no username is specified ask for it
@@ -50,31 +77,23 @@ if __name__ == "__main__":
             sys.exit(-1)
     else:
         userName = options.username
-
-    userMgr = RoleUserManagerToFile()
-    userMgr.setUserDir(options.outputdir)
-    userMgr.initNextSerialNum()
+        
+    # Ask for password
     
+    password = getpass.getpass("Enter password:  ")
+    
+    if password == "":
+        print "Invalid password given."
+        sys.exit(-1)
+
     # Make username does not exist
            
-    if userExists(userName, userMgr):
+    if userExists(userName, options.outputdir):
         print "User already exists. Please choose a different username."
         sys.exit(-1)
         
     # Create user and password
+    
+    createUser(userName, sha.sha(password).hexdigest(), options.outputdir)
+    password = "                        "
         
-    password = raw_input("Please enter user password: ")
-    userMgr.createUser(userName, sha.sha(password).hexdigest())
-    password = ""
-    
-    # Create user directory
-    
-    userDir = os.path.join(options.outputdir, userName) 
-    os.mkdir(os.path.join(options.outputdir, userName))
-    
-    # Create template configuration file
-    
-    configFilename = os.path.join(userDir,"client.xml")
-    configFile = open(configFilename, "w")
-    configFile.write(configTemplate)
-    configFile.close()    
