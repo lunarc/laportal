@@ -1,0 +1,46 @@
+#!/bin/sh
+
+source ./lapversion
+
+# create file lists
+
+FIND_OPTS='-type f'
+
+DATE_TAG=`date +'%Y%m%d'`
+
+CONTEXT_DIR='context'
+PLUGIN_DIR='context/Plugins'
+IMAGE_DIR='context/images'
+CSS_DIR='context/css'
+PATCH_DIR='patches'
+INIT_DIR='init'
+CONFIG_DIR='LapConfig'
+ROOT_DIR='.'
+JSMENU_DIR='context/jsmenubar'
+
+DIST_DIR='/sw/lap-dist'
+
+find $PLUGIN_DIR $FIND_OPTS | grep -v '.pyc' | grep -v '.svn' > pluginFiles
+find $CONTEXT_DIR $FIND_OPTS | grep -v $PLUGIN_DIR | grep -v $IMAGE_DIR | grep -v $CSS_DIR | grep -v '.pyc' | grep -v '.svn' | grep -v $JSMENU_DIR | grep -v $JSMENU_DIR > sourceFiles
+find $PATCH_DIR $FIND_OPTS | grep -v '.svn' >> sourceFiles
+find $IMAGE_DIR $FIND_OPTS | grep -v '.svn' > layoutFiles
+find $CSS_DIR $FIND_OPTS | grep -v '.svn' >> layoutFiles
+find $INIT_DIR $FIND_OPTS | grep -v '.svn' > configFiles
+find $CONFIG_DIR $FIND_OPTS | grep -v '.svn' >> configFiles
+echo start-lap >> configFiles
+echo lapversion >> configFiles
+echo make-dist >> configFiles
+echo Launch.py >> configFiles
+echo install-depends >> configFiles
+
+tar cvzf $DIST_DIR/lap-source-$LAP_VERSION.tar.gz --files-from ./sourceFiles
+tar cvzf $DIST_DIR/lap-plugins-$LAP_VERSION.tar.gz --files-from ./pluginFiles
+tar cvzf $DIST_DIR/lap-layout-$LAP_VERSION.tar.gz --files-from ./layoutFiles
+tar cvzf $DIST_DIR/lap-config-$LAP_VERSION.tar.gz --files-from ./configFiles
+
+rm sourceFiles
+rm pluginFiles
+rm layoutFiles
+rm configFiles
+
+#chown -R apache.apache /var/www/html/lapsrc

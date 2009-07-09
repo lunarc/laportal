@@ -1,0 +1,46 @@
+#!/bin/env python
+
+import os, string, sys
+
+if not os.path.exists("./depends"):
+        os.mkdir("./depends")
+
+print "Downloading dependencies..."
+
+if not os.path.exists("./tarballs"):
+        os.mkdir("./tarballs")
+
+currDir = os.getcwd()
+os.chdir("./tarballs")
+
+print "Downloading jsdomenubar 1.1.1..."
+os.system("wget http://www.dynamicdrive.com/dynamicindex1/jsdomenubar/jsdomenubar1_1_1.zip")
+
+#print "Downloading HyperText 1.0.1..."
+#os.system("wget http://dustman.net/andy/python/HyperText/1.0.1/HyperText-1.0.1.tar.gz")
+
+# Install and patch jsdomenubar
+
+print "Installing jsdomenubar..."
+
+if not os.path.exists("../context/jsmenubar"):
+        os.mkdir("../context/jsmenubar")
+
+os.system("unzip -qq -o jsdomenubar1_1_1.zip -d ../context/jsmenubar")
+os.chdir("../context/jsmenubar")
+
+print "Patching jsdommenubar..."
+
+os.system("patch < ../../patches/jsmenubar.patch")
+
+# Install HyperText
+
+#os.chdir(currDir)
+
+#if not os.path.exists("./depends/HyperText"):
+#        os.mkdir("./depends/HyperText")
+
+#print "Installing HyperText..."
+
+#os.system("tar xzf ./tarballs/HyperText-1.0.1.tar.gz -C ./depends")
+

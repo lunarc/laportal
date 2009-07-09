@@ -1,0 +1,175 @@
+
+/* ----- General layout ---- */
+
+body {
+	padding-left: 0em;
+	font-family: Tahoma, Georgia, "Times New Roman", Times, serif;
+	color: black;
+	background-color: white;
+	font-size:10pt;
+}
+
+p {
+	margin-bottom:0.5em;
+	text-align: justify;
+}
+
+pre {
+	padding:1em;
+	background-color: lightgray;
+	margin-bottom:1em;
+	margin-top:1em;
+	font-family: "Courier new";
+	font-size:8pt;
+}
+
+h1 {
+	font-family: Tahoma, Helvetica, Geneva, Arial,
+	SunSans-Regular, sans-serif;
+	font-size:16pt;
+	margin-top: 1em;
+	margin-bottom: 0.5em;
+}
+
+h2 {
+	font-family: Tahoma, Helvetica, Geneva, Arial,
+	SunSans-Regular, sans-serif;
+	font-size:14pt
+}
+
+h2 {
+	font-family: Tahoma, Helvetica, Geneva, Arial,
+	SunSans-Regular, sans-serif;
+	font-size:12pt
+}
+
+a:link {
+	color: blue
+}
+
+a:visited {
+	color: purple
+}
+
+/* ----- User interface parts ----- */
+
+#workarea {
+ 	position:absolute;
+	top:160px;
+	padding-top:5px;
+	padding-bottom:5px;
+	background-color:#FFFFFF;
+	border:0px dotted #7B9AC0;
+	left:5%;
+	width: 90%;
+	/*height: 600px;*/
+	bottom:40px;
+}
+
+#doctoolbar {
+	font-family: Tahoma, Georgia, "Times New Roman", Times, serif;
+	font-size:2em;
+	font-weight:bold;
+	position:absolute;
+	top:1em;
+	padding-top:0.5em;
+	padding-left:0.5em;
+	padding-bottom:0.5em;
+	background-color:#DAE3ED;
+	border:0px dotted #7B9AC0;
+	left:5%;
+	width: 90%;
+	height:1.2em;
+	bottom:40px;
+	text-align:left;
+}	
+
+#docarea {
+ 	position:absolute;
+	top:8em;
+	padding-top:5px;
+	padding-bottom:5px;
+	background-color:#FFFFFF;
+	border:0px dotted #7B9AC0;
+	left:5%;
+	width: 90%;
+	/*height: 600px;*/
+	bottom:40px;
+}
+
+#messagearea {
+	color:#000000;
+	position:absolute;
+	background-color:#DAE3ED;
+	border:0px dotted #7B9AC0;
+	width: 100%;
+	left:0px;
+	padding-top:0.3em;
+	bottom:0px;
+	height:1.8em;
+	font-family: Tahoma, Helvetica, Geneva, Arial, SunSans-Regular, sans-serif;
+	font-size:8pt;
+	text-align:left;
+	text-indent:4px;
+}
+
+
+/* ----- Menu system settings ----- */
+
+#menu {
+    background-color:#DAE3ED;
+	background-image: url(/lap/context/images/menu_shadow.gif);
+	background-repeat:  repeat-x;
+	background-position: bottom left;
+    border-bottom:1px solid white;
+    padding:4px 0px;
+	height:1.9em;
+    }
+    
+#jsmenu {
+	display:block;
+	position:relative;
+	background-color: #ECE9D8;
+	border:1px solid #7B9AC0;
+	width: 100%;
+	height:22px;
+	padding-bottom: 3px;
+	padding-left: 1px;
+	padding-right: 1px;
+	padding-top: 3px;	
+	left:0px;
+	top:90px;
+}
+
+#menu a {
+    padding:4px 10px;
+    text-decoration:none;
+    /*font-weight:bold;*/
+    color:#7B9AC0;
+	background:#DAE3ED;
+    }
+#menu a.hover {
+    background:#7B9AC0;
+	color:white;
+    }
+
+#menu span {
+    display:none;
+    }
+#img {
+    vertical-align:bottom;
+    }
+
+#subnav {
+    font-size:10px;
+    margin-bottom:2em;
+    }
+#subnav a {
+    color:#FB3B00;
+    margin-right:1em;
+    }
+#subnav span {
+    color:silver;
+    margin-right:1em;
+    }
+	

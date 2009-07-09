@@ -1,0 +1,89 @@
+
+/* ----- General layout ---- */
+
+body {
+	padding-left: 0em;
+	font-family: Tahoma, Georgia, "Times New Roman", Times, serif;
+	color: black;
+	background-color: white;
+	font-size:10pt;
+}
+
+p {
+	margin-bottom:0.5em;
+	text-align: justify;
+}
+
+p.framed {
+	border: 2px solid black;
+	padding: 1em;
+}
+
+pre {
+	padding:1em;
+	background-color: lightgray;
+	margin-bottom:1em;
+	margin-top:1em;
+	font-family: "Courier new";
+	font-size:8pt;
+}
+
+h1 {
+	font-family: Tahoma, Helvetica, Geneva, Arial,
+	SunSans-Regular, sans-serif;
+	font-size:16pt;
+	margin-top: 1em;
+	margin-bottom: 0.5em;
+}
+
+h2 {
+	font-family: Tahoma, Helvetica, Geneva, Arial,
+	SunSans-Regular, sans-serif;
+	font-size:14pt
+}
+
+h2 {
+	font-family: Tahoma, Helvetica, Geneva, Arial,
+	SunSans-Regular, sans-serif;
+	font-size:12pt
+}
+
+a:link {
+	color: blue
+}
+
+a:visited {
+	color: purple
+}
+
+#doctoolbar {
+	font-family: Tahoma, Georgia, "Times New Roman", Times, serif;
+	font-size:2em;
+	font-weight:bold;
+	position:absolute;
+	top:1em;
+	padding-top:0.5em;
+	padding-left:0.5em;
+	padding-bottom:0.5em;
+	background-color:#DAE3ED;
+	border:0px dotted #7B9AC0;
+	left:5%;
+	width: 90%;
+	height:1.2em;
+	bottom:40px;
+	text-align:left;
+}	
+
+#docarea {
+ 	position:absolute;
+	top:8em;
+	padding-top:5px;
+	padding-bottom:5px;
+	background-color:#FFFFFF;
+	border:0px dotted #7B9AC0;
+	left:5%;
+	width: 90%;
+	/*height: 600px;*/
+	bottom:40px;
+}
+
