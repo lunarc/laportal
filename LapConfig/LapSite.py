@@ -10,7 +10,7 @@ Logging = {
 }
 
 Dirs = {
-    "PluginDir":"/sw/laportal/stable/context/Plugins",
+    "PluginDir":"/sw/laportal/trunk/context/Plugins",
     "SessionDir":"/var/spool/lap",
     "WebWareDir":"/sw/pkg/Webware-1.0.1",
     "AppWorkDir":"/sw/lap",

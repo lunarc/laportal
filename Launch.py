@@ -7,7 +7,7 @@
 
 workDir = None
 webwareDir = '/sw/pkg/Webware-1.0.1'
-libraryDirs = ['/sw/lap/LapConfig', '/sw/lap/webkit_ext', '/sw/lap/webkit', '/sw/laportal/stable/context', '/sw/pkg/arc-trunk/lib64/python2.4/site-packages']
+libraryDirs = ['/sw/lap/LapConfig', '/sw/lap/webkit_ext', '/sw/lap/webkit', '/sw/lap/context', '/sw/pkg/arc-trunk/lib64/python2.4/site-packages']
 runProfile = 0
 logFile = None
 pidFile = None
