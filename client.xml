@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArcConfig>
+  <DefaultServices>
+    <URL Flavour="ARC0" ServiceType="index">ldap://index1.swegrid.se:2135/Mds-Vo-name=SweGrid,o=grid</URL>
+    <URL Flavour="ARC0" ServiceType="index">ldap://index2.swegrid.se:2135/Mds-Vo-name=SweGrid,o=grid</URL>
+  </DefaultServices>
+  <CACertificatePath>/etc/grid-security/certificates</CACertificatePath>
+  <CertificatePath>/home/jonas/.globus/usercert.pem</CertificatePath>
+  <KeyPath>/home/jonas/.globus/userkey.pem</KeyPath>
+  <ProxyPath>/tmp/x509up_u500</ProxyPath>
+</ArcConfig>
