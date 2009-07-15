@@ -1,0 +1,75 @@
+ArcGUI installation instructions
+--------------------------------
+
+ArcGUI is a prototype user interface client for the ARC1 libarcclient library.
+The client is implemented in Python using the wxPython user interface toolkit.
+
+Requirements
+------------
+
+GTK
+wxWidgets (wxGTK)
+wxPython
+ARC1 client library of a recent bleeding edge version :)
+ARC1 python binding for the client library
+
+Installation
+------------
+
+Untar the tarball in a suitable location:
+
+$ tar xvzf arcgui-x.y.tar.gz
+
+Modify the arcgui start script:
+
+$ cd arcgui-x.y/bin
+$ [insert favourite editor here] arcgui
+
+Modify the varibles in the script according to your installation.
+
+arcgui-x.y/bin/arcgui:
+
+#!/bin/sh
+export ARC_LOCATION={Location of the ARC1 directory}
+export ARCGUI_LOCATION={Location where the arcgui-tarball was unpacked}
+export PYTHONPATH=$PYTHONPATH:$ARC_LOCATION/lib64/python2.4/site-packages:$ARCGUI_LOCATION
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARC_LOCATION/lib64:$ARC_LOCATION/lib: ...
+       $ARC_LOCATION/lib/arc:$ARC_LOCATION/lib64/python2.4/site-packages: ...
+       $GLOBUS_LOCATION/lib
+python $ARCGUI_LOCATION/arcgui.py
+
+The lib64/python2.4 parts of the script must also be changed to match the
+architecture and python version of the system. The above script was created
+for a CentOS 5.3 x86_64 installation.
+
+Finally add the $ARCGUI_LOCATION/bin to your search path.
+
+Usage
+-----
+
+If everything was setup correctly the user interface can be started by typing:
+
+$ arcgui
+
+The client will create configuration files in ~/.arc if they don't exist or
+use the same files as the other arc-tools (client.xml and jobs.xml). A sample
+client.xml configuration is shown below:
+
+~/.arc/client.xml:
+
+<?xml version="1.0" encoding="utf-8"?>
+<ArcConfig>
+  <DefaultServices>
+    <URL Flavour="ARC0" ServiceType="index">ldap://index1.swegrid.se:2135/Mds-Vo-name=SweGrid,o=grid</URL>
+    <URL Flavour="ARC0" ServiceType="index">ldap://index2.swegrid.se:2135/Mds-Vo-name=SweGrid,o=grid</URL>
+  </DefaultServices>
+  <TimeOut>20</TimeOut>
+  <Broker>
+    <Name>RandomBroker</Name>
+  </Broker>
+  <CACertificatePath>/etc/grid-certificates</CACertificatePath>
+  <CertificatePath>/home/jonas/.globus/usercert.pem</CertificatePath>
+  <KeyPath>/home/jonas/.globus/userkey.pem</KeyPath>
+  <ProxyPath>/tmp/x509up_u500</ProxyPath>
+</ArcConfig>
+

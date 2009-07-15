@@ -1,0 +1,6 @@
+#!/bin/sh
+export ARC_LOCATION=/sw/pkg/arc-trunk
+export ARCGUI_LOCATION=/sw/laportal/arcgui
+export PYTHONPATH=$PYTHONPATH:$ARC_LOCATION/lib64/python2.4/site-packages:$ARCGUI_LOCATION
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARC_LOCATION/lib64:$ARC_LOCATION/lib:$ARC_LOCATION/lib/arc:$ARC_LOCATION/lib64/python2.4/site-packages:$GLOBUS_LOCATION/lib
+python $ARCGUI_LOCATION/arcgui.py
