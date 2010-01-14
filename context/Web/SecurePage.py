@@ -51,6 +51,8 @@ class SecurePage(DefaultPage):
     
     def awake(self, trans):
         DefaultPage.awake(self, trans) # awaken our superclass
+
+        print "awake()"
         
         if True:
 
@@ -71,6 +73,19 @@ class SecurePage(DefaultPage):
                 request.setField('action', request.urlPath().split('/')[-1])
                 app.forward(trans, 'LoginPage')
 
+            # Are they already logged in?
+
+            elif self.loggedInUser():
+                return
+
+            elif request.environ().has_key("REMOTE_USER"):
+                # Are they logging in?
+                print "has remoteUser"
+                if not self.loginRemoteUser(request.remoteUser()):
+                    request.setField('extra', 'Login failed. Please try again.')
+                    request.setField('action', request.urlPath().split('/')[-1])
+                    app.forward(trans, 'UserLoginPage')
+                    
             # Is the session expired?
 
             elif request.isSessionExpired():
@@ -82,12 +97,6 @@ class SecurePage(DefaultPage):
                 request.setField('action', request.urlPath().split('/')[-1])
                 app.forward(trans, 'LoginPage')
 
-            # Are they already logged in?
-
-            elif self.loggedInUser():
-                return
-
-            # Are they logging in?
 
             elif request.hasField('login') \
                 and request.hasField('username') \
@@ -180,6 +189,27 @@ class SecurePage(DefaultPage):
                 return True
             
         return False
+    
+    def __dn2user(self, dn):
+        parts = dn.split("/")[1:]
+        
+        dnParts = []
+        
+        for part in parts:
+            id = part.split("=")[1]
+            id = id.replace(".","_").lower()
+            id = id.replace(" ","_")
+            dnParts.append(id)
+            
+        return "_".join(dnParts)
+
+    def loginRemoteUser(self, remoteUser):
+        if remoteUser!="":
+            self.session().setValue("authenticated_user", self.__dn2user(remoteUser))
+            self.session().setValue("authenticated_user_dn", remoteUser)
+            return True
+        else:
+            return False
 
     def loginUser(self, username, password):
 
@@ -202,6 +232,13 @@ class SecurePage(DefaultPage):
         
         if self.session().hasValue("authenticated_user"):
             return self.session().value('authenticated_user')
+        else:
+            return None
+        
+    def loggedInUserDN(self):
+        
+        if self.session().hasValue("authenticated_user_dn"):
+            return self.session().value('authenticated_user_dn')
         else:
             return None
 

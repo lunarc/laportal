@@ -38,6 +38,12 @@ class LoginPageDummy(ApplicationSecurePage):
 	def writeContent(self):
 		"""Render page HTML."""
 		
-		adapterName = self.request().adapterName()		
-		Web.Dialogs.messageBox(self, "You have been logged in.", "Information", "%s/context/SecureWelcomePage" % adapterName)
+		adapterName = self.request().adapterName()
+		
+		if self.loggedInUserDN()!=None:
+			DN = self.loggedInUserDN()
+			Web.Dialogs.messageBox(self, "%s logged in." % DN, "Information", "%s/context/SecureWelcomePage" % adapterName)
+		elif self.loggedInUser()!=None:
+			user = self.loggedInUser()
+			Web.Dialogs.messageBox(self, "% logged in." % user, "Information", "%s/context/SecureWelcomePage" % adapterName)
 

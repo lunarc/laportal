@@ -179,6 +179,16 @@ class ApplicationSecurePage(SecurePage):
         user = Lap.Session.User(self.session().value('authenticated_user'))
         userDir = user.getDir();
         
+        # Show user information
+        
+        if self.loggedInUserDN()!=None:
+            tableBody.append(TR(TD(BR())))
+            tableBody.append(TR(TD("Current user:")))
+            tableBody.append(TR(TD(self.loggedInUserDN())))
+        elif self.loggedInUser()!=None:
+            tableBody.append(TR(TD("Current user:")))
+            tableBody.append(TR(TD(self.loggedInUser())))
+        
         # Show credential information
 
         cred = arc.Credential(os.path.join(userDir, "proxy.pem"), os.path.join(userDir, "proxy.pem"), "", "")

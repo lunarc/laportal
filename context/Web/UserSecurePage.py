@@ -30,6 +30,7 @@ class UserSecurePage(DefaultPage, Configurable):
         Configurable.__init__(self)
 
     def awake(self, trans):
+		print "UserSecurePage awake()"
         DefaultPage.awake(self, trans) # awaken our superclass
         if self.setting('RequireLogin'):
             # Handle four cases: login attempt, logout, already logged in, and not already logged in.
@@ -54,6 +55,13 @@ class UserSecurePage(DefaultPage, Configurable):
             elif self.loggedInUser():
                 return
             # Are they logging in?
+			print "Check for remote user."
+			elif request.environ().hasField('REMOTE_USER'):
+				print "has remoteUser
+				if not self.loginRemoteUser(request.environ().field('REMOTE_USER'))
+                    request.setField('extra', 'Login failed. Please try again.')
+                    request.setField('action', request.urlPath().split('/')[-1])
+                    app.forward(trans, 'UserLoginPage')
             elif request.hasField('login') \
                     and request.hasField('username') \
                     and request.hasField('password'):
@@ -106,6 +114,11 @@ class UserSecurePage(DefaultPage, Configurable):
         userMgr = RoleUserManagerToFile()
         userMgr.setUserDir("/var/spool/lap")
         return userMgr.loginName(username, sha.sha(password).hexdigest())!=None
+
+	def loginRemoteUser(self, remoteUser):
+    	self.session().setValue('authenticated_user', remoteUser)
+        return True
+
 
     def loginUser(self, username, password):
         # We mark a user as logged-in by setting a session variable
