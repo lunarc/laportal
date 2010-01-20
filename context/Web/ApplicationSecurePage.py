@@ -1,7 +1,7 @@
 #
 # ApplicationSecurePage base class module
 #
-# Copyright (C) 2006-2009 Jonas Lindemann
+# Copyright (C) 2006-2010 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -284,6 +284,7 @@ class ApplicationSecurePage(SecurePage):
         
         menuSession = Web.Ui.menuFactory(self, "menuSession", "Session", "", width=130)
         menuSession.hint = "Functions for requesting a certificate and authorisation on the systems."
+        menuSession.addMenuItem(Web.Ui.MenuItem("Retrieve proxy from MyProxy...",self.pageLoc()+"/MyProxyPage"))
         menuSession.addMenuItem(Web.Ui.MenuItem("Upload proxy certificate...",self.pageLoc()+"/UploadProxyPage"))
         menuSession.addMenuItem(Web.Ui.MenuItem("Log out...",self.pageLoc()+"/LogoutPage"))
 

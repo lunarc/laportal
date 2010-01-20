@@ -1,7 +1,7 @@
 #
 # Ui module
 #
-# Copyright (C) 2006-2009 Jonas Lindemann
+# Copyright (C) 2006-2010 Jonas Lindemann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -676,6 +676,8 @@ class Form(Control, FieldValidationMixin):
                     self._fieldValues[fieldName] = self.getString(request, fieldName)
                 else:
                     self._fieldValues[fieldName] = ""
+                    
+        return self._fieldValues
             
     def getFieldValues(self):
         """Return the field value dictionary.
