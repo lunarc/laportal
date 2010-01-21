@@ -56,12 +56,13 @@ class MyProxyPage(ApplicationSecurePage):
 
         adapterName = self.request().adapterName()          
         
-        self.__form = Web.Ui.Form("retrieveProxyForm", "%s/context/MyProxyPage" % adapterName, "Retrieve proxy", "25em")
+        self.__form = Web.Ui.Form("retrieveProxyForm", "%s/context/MyProxyPage" % adapterName, "Retrieve proxy", "30em")
                         
         self.__form.setDefaultLabelWidth("10.0em")
-        self.__form.addText("MyProxy server", "proxyServer", fieldType = "hostname")
-        self.__form.addText("User", "proxyUsername", fieldType = "string")
-        self.__form.addPassword("Passphrase", "proxyPassphrase", fieldType = "password")
+        self.__form.addText("MyProxy server", "proxyServer", fieldType = "hostname", width="25")
+        self.__form.addText("Lifetime", "proxyLifetime", fieldType = "int", width="25", unit="hours")
+        self.__form.addText("User", "proxyUsername", fieldType = "string", width="25")
+        self.__form.addPassword("Passphrase", "proxyPassphrase", fieldType = "password", width="25")
                     
         self.__form.addFormButton("Retrieve", "_action_retrieveProxy")
         self.__form.setHaveSubmit(False)
@@ -85,35 +86,36 @@ class MyProxyPage(ApplicationSecurePage):
             user = Lap.Session.User(self.session().value('authenticated_user'))
                                     
             # Create preferences form
+            
+            if self.hasProperty("formValues"):
+                self.__form.fieldValues = self.getProperty("formValues")
 
             self.__form.render(self)
             
     def retrieveProxy(self):
         if self.session().hasValue("authenticated_user"):
             user = Lap.Session.User(self.session().value('authenticated_user'))
-            
-            if self.session().hasValue("myproxyForm"):
-                
-                # Get values from form
+                          
+            # Get values from form
 
-                values = self.__form.retrieveFieldValues(self.request())
-                
-                # Query proxyServer
-                
-                proxyFilename = os.path.join(user.homeDir, "proxy.pem")
-                
-                proxyServer = MyProxyServer(values["proxyServer"])
-                proxyServer.username = values["proxyUsername"]
-                proxyServer.outputFilename = proxyFilename
-                
-                try:
-                    proxyServer.retrieveProxy(values["proxyPassphrase"])
-                    os.chmod(proxyFilename, 0600)               
-                    self.setFormStatus("A proxy has been received for user %s." % (proxyServer.username))
-                except Exception, e:
-                    self.setFormStatus("Error:"+str(e))
-            else:
-                self.setFormStatus("Could not load form.")
+            values = self.__form.retrieveFieldValues(self.request())
+            self.setProperty("formValues", values)
+            
+            # Query proxyServer
+            
+            proxyFilename = os.path.join(user.homeDir, "proxy.pem")
+            
+            proxyServer = MyProxyServer(values["proxyServer"])
+            proxyServer.username = values["proxyUsername"]
+            proxyServer.lifeTime = int(values["proxyLifetime"])*3600
+            proxyServer.outputFilename = proxyFilename
+            
+            try:
+                proxyServer.retrieveProxy(values["proxyPassphrase"])
+                os.chmod(proxyFilename, 0600)               
+                self.setFormStatus("A proxy has been received for user %s." % (proxyServer.username))
+            except Exception, e:
+                self.setFormStatus("Error:"+str(e))
         else:
             self.setFormStatus("Not authenticated.")
             

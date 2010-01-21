@@ -45,7 +45,7 @@
 form {
   padding: 0px;
   font-size: 100%;
-  font-family: tahoma;
+  font-family: Tahoma, Arial, sans-serif;
   font-size: 80%;
 }
 
@@ -73,6 +73,7 @@ label {
   margin: 0 1em 0 0;
   clear: both;
   color: #000000;
+  font-family: Tahoma, Arial, sans-serif;
 }
 
 label u {

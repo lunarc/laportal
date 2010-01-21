@@ -776,17 +776,32 @@ class Form(Control, FieldValidationMixin):
         """Set current unit used in the text input controls."""
         self._currentUnit = unit
         
-    def addText(self, label, name, value = "", width="", labelWidth="", fieldType="string"):
+    def addText(self, label, name, value = "", width="", labelWidth="", fieldType="string", unit="", unitWidth=""):
         """Add text control."""
+        
+        controlValue = value
+        
+        if value == "" and self._fieldValues.has_key(name):
+            controlValue = self._fieldValues[name]
+        else:
+            self._fieldValues[name] = value
+            controlValue = value
+            
+        self._fieldTypes[name] = fieldType
+
         if width == "":
             width = self._defaultTextWidth
         if labelWidth == "":
             labelWidth = self._defaultLabelWidth
             
-        controlParams = (label, "text", name, value, "", width, labelWidth, self._currentUnit, self._currentUnitWidth)
+        if unit == "" and unitWidth == "":
+            controlParams = (label, "text", name, controlValue, "", width, labelWidth, self._currentUnit, self._currentUnitWidth)
+        elif unit != "" and unitWidth == "":
+            controlParams = (label, "text", name, controlValue, "", width, labelWidth, unit, self._currentUnitWidth)
+        else:
+            controlParams = (label, "text", name, controlValue, "", width, labelWidth, self._currentUnit, self._currentUnitWidth)
+            
         self._controls.append(controlParams)
-        self._fieldValues[name] = value
-        self._fieldTypes[name] = fieldType
         
     def addTextArea(self, label, name, value = "", rows = 4, cols=20, labelWidth="", fieldType="string"):
         """Add text area control."""
@@ -1050,16 +1065,24 @@ class Form(Control, FieldValidationMixin):
                         if control[6]!="":
                             labelWidth = control[6]
                             
+                        if self._fieldValues.has_key(control[2]):
+                            controlValue = self._fieldValues[control[2]]
+                        else:
+                            controlValue = control[3]
+                            
                         if control[4]=="":
                             currentFieldSet.append(LABEL(control[0], label_for=control[2], style="width: %s" % labelWidth))
-                            currentFieldSet.append(INPUT(type=control[1], name=control[2], value=control[3], style="width: %s" % width))
+                            currentFieldSet.append(INPUT(type=control[1], name=control[2], value=controlValue, style="width: %s" % width))
                             if control[7]!="":
                                 currentFieldSet.append(INPUT(type="input", value=control[7], style="padding-left: 0.5em; border: 1px; background-color: transparent;", readonly=1, border=1, size=control[8]))
+                            currentFieldSet.append(BR())
                         else:
                             currentFieldSet.append(LABEL(control[0], label_for=control[2], style="width: %s" % labelWidth))
-                            currentFieldSet.append(INPUT(type=control[1], name=control[2], value=control[3], readonly=1, style="width: %s" % width))                        
+                            currentFieldSet.append(INPUT(type=control[1], name=control[2], value=controlValue, readonly=1, style="width: %s" % width))                        
                             if control[7]!="":
                                 currentFieldSet.append(INPUT(type="input", value=control[7], style="border: 1px; background-color: transparent;", readonly=1, border=1, size=control[8]))
+                            currentFieldSet.append(BR())
+
                     elif control[1]=="password":
                                                 
                         if control[5]!="":
@@ -1154,6 +1177,14 @@ class Form(Control, FieldValidationMixin):
                 buttonRow.append(INPUT(type="reset", name="btnReset", value = "Reset"))         
             
         page.write(window)
+        
+    def getFieldValues(self):
+        return self._fieldValues
+    
+    def setFieldValues(self, values):
+        self._fieldValues = values
+        
+    fieldValues = property(getFieldValues, setFieldValues)
     
 class TableForm(Control):
     """Form class
