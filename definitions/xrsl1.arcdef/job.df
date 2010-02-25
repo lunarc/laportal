@@ -1,0 +1,6 @@
+&(executable="/bin/sh")
+(arguments="myscript")
+(inputFiles=("myscript" "%(taskdir)s/myscript"))
+(stdout="stdout.txt")
+(stderr="stderr.txt")
+(wallTime="5 minutes")
