@@ -1,0 +1,32 @@
+#!/bin/bash
+
+echo "Starting ArcGUI..."
+
+export ARC_LOCATION=$(cd $(dirname $(which arcsub))/..; pwd)
+
+if [ -d $(dirname $0)/../lib/arcgui ]; then
+	export ARCGUI_LIB=$(cd $(dirname $0)/../lib/arcgui; pwd)
+	export ARCGUI_BIN=$(cd $(dirname $0); pwd)
+	export ARCGUI_SHARE=$(cd $(dirname $0)/../share/arcgui; pwd)
+else
+	export ARCGUI_LIB=$PYTHONPATH
+	export ARCGUI_BIN=$(cd $(dirname $0); pwd)
+	export ARCGUI_SHARE=/usr/share/arcgui
+fi
+
+#echo "ARC location    = $ARC_LOCATION"
+#echo "ARCGUI location = $ARCGUI_LOCATION"  
+
+export SYSARCH=$(uname -m)
+export PYTHON_VERSION_STRING=$(python -V 2>&1 )
+export PYTHON_VERSION=${PYTHON_VERSION_STRING#* }
+export PYTHON_MAIN_VERSION=${PYTHON_VERSION%.*}
+if [ $SYSARCH = "x86_64" ]; then
+	export LIBARCH=lib64
+else
+	export LIBARCH=lib
+fi
+export PYTHONPATH=$PYTHONPATH:$ARC_LOCATION/$LIBARCH/python$PYTHON_MAIN_VERSION/site-packages:$ARCGUI_LIB:$ARCGUI_LIB/plugins
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARC_LOCATION/$LIBARCH:$ARC_LOCATION/lib:$ARC_LOCATION/lib/arc:$ARC_LOCATION/$LIBARCH/python$PYTHON_MAIN_VERSION/site-packages:$GLOBUS_LOCATION/lib
+
+python -d $ARCGUI_BIN/arcgui.py
