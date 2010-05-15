@@ -1,0 +1,19 @@
+#!/bin/sh
+
+export ARC_LOCATION=/sw/pkg/arc-trunk
+export ARCGUI_LOCATION=/sw/laportal/arcgui
+
+export SYSARCH=`uname -i`
+export PYTHON_VERSION_STRING=`python -V 2>&1`
+export PYTHON_VERSION=${PYTHON_VERSION_STRING#* }
+export PYTHON_MAIN_VERSION=${PYTHON_VERSION%.*}
+if [ $SYSARCH = "i386" ]; then
+        export LIBARCH=lib
+else
+        export LIBARCH=lib64
+fi
+export PYTHONPATH=$PYTHONPATH:$ARC_LOCATION/$LIBARCH/python$PYTHON_MAIN_VERSION/site-packages:$ARCGUI_LOCATION:$ARCGUI_LOCATION/plugins
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARC_LOCATION/$LIBARCH:$ARC_LOCATION/lib:$ARC_LOCATION/lib/arc:$ARC_LOCATION/$LIBARCH/python$PYTHON_MAIN_VERSION/site-packages:$GLOBUS_LOCATION/lib
+
+echo $PYTHONPATH
+
