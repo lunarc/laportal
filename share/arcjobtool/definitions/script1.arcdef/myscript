@@ -1,0 +1,9 @@
+#!/bin/sh
+
+echo "Hello, world!"
+
+echo "Jobname %(name)s"
+echo "Task id %(id)d"
+echo "Sweep size %(sweepSize)d"
+
+sleep 3600

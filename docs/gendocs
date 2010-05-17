@@ -1,0 +1,22 @@
+#!/bin/bash
+
+export ARC_LOCATION=$(dirname $(which arcsub))/..
+export ARCJOBTOOL_LOCATION=$(dirname $0)/..
+
+export SYSARCH=$(uname -m)
+export PYTHON_VERSION_STRING=$(python -V 2>&1 )
+export PYTHON_VERSION=${PYTHON_VERSION_STRING#* }
+export PYTHON_MAIN_VERSION=${PYTHON_VERSION%.*}
+if [ $SYSARCH = "x86_64" ]; then
+        export LIBARCH=lib64
+else
+        export LIBARCH=lib
+fi
+export PYTHONPATH=$PYTHONPATH:$ARC_LOCATION/$LIBARCH/python$PYTHON_MAIN_VERSION/site-packages:$ARCJOBTOOL_LOCATION/lib:$ARCJOBTOOL_LOCATION/lib/plugins
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARC_LOCATION/$LIBARCH:$ARC_LOCATION/lib:$ARC_LOCATION/lib/arc:$ARC_LOCATION/$LIBARCH/python$PYTHON_MAIN_VERSION/site-packages:$GLOBUS_LOCATION/lib
+
+
+rm -rf ./html
+epydoc -v --graph all --html -o ./html --name "ARC Job Submission Tool" ../lib/arcjobtool/*.py ../lib/arcjobtool/plugins/*.py
+
+

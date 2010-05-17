@@ -1,0 +1,670 @@
+\documentclass{book}
+%\documentclass{article}                            %for shorter notes
+\usepackage{graphicx}                              %for PNG images (pdflatex)
+%\usepackage{graphics}                              %for EPS images (latex)
+\usepackage[linkbordercolor={1.0 1.0 0.0}]{hyperref} %for \url tag
+\usepackage{color}                                 %for defining custom colors
+\usepackage{framed}                                %for shaded and framed paragraphs
+\usepackage{textcomp}                              %for various symbols, e.g. Registered Mark
+\usepackage{geometry}                              %for defining page size
+\usepackage{longtable}                             %for breaking tables
+%
+\geometry{verbose,a4paper,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2cm}
+\hypersetup{
+  pdfauthor = {Jonas Lindemann},
+  pdftitle = {Advanced User Interfaces},
+  pdfsubject = {Technical documentation},
+  pdfkeywords = {GUI, ARC, NorduGrid},
+  pdfcreator = {PDFLaTeX with hyperref package},
+  pdfproducer = {PDFLaTeX}
+}
+%
+\bibliographystyle{IEEEtran}                       %a nice bibliography style
+%
+\def\efill{\hfill\nopagebreak}%
+\hyphenation{Nordu-Grid}
+\setlength{\parindent}{0cm}
+\setlength{\FrameRule}{1pt}
+\setlength{\FrameSep}{8pt}
+\addtolength{\parskip}{5pt}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\renewcommand{\arraystretch}{1.3}
+\newcommand{\dothis}{\colorbox{shadecolor}}
+\newcommand{\globus}{Globus Toolkit\textsuperscript{\textregistered}~2~}
+\newcommand{\GT}{Globus Toolkit\textsuperscript{\textregistered}}
+\newcommand{\ngdl}{\url{http://ftp.nordugrid.org/download}~}
+\definecolor{shadecolor}{rgb}{1,1,0.6}
+\definecolor{salmon}{rgb}{1,0.9,1}
+\definecolor{bordeaux}{rgb}{0.75,0.,0.}
+\definecolor{cyan}{rgb}{0,1,1}
+
+\newcommand{\libarcclient}{\textbf{\sffamily{libarcclient }}}
+\newcommand{\python}[1]{\textbf{\sffamily{#1 }}}
+\newcommand{\filename}[1]{\textbf{\sffamily{#1 }}}
+%
+%----- DON'T CHANGE HEADER MATTER
+\begin{document}
+\def\today{\number\day/\number\month/\number\year}
+
+\begin{titlepage}
+
+\begin{tabular}{rl}
+\resizebox*{3cm}{!}{\includegraphics{ng-logo.png}}
+&\parbox[b]{2cm}{\textbf \it {\hspace*{-1.5cm}NORDUGRID\vspace*{0.5cm}}}
+\end{tabular}
+
+\hrulefill
+
+%-------- Change this to NORDUGRID-XXXXXXX-NN
+
+{\raggedleft NORDUGRID-TECH-25\par}
+
+{\raggedleft \today\par}
+
+\vspace*{2cm}
+
+%%%%---- The title ----
+{\centering \textsc{\Large Advanced User Interfaces}\Large \par}
+\vspace*{0.5cm}
+    
+%%%%---- A subtitle, if necessary ----
+{\centering \textit{\large ArcGui and the Lunarc Application Portal}\large \par}
+    
+\vspace*{1.5cm}
+%%%%---- A list of authors ----
+    {\centering \large Jonas Lindemann\footnote{jonas.lindemann@lunarc.lu.se} \large \par}
+    
+%%%%---- An abstract - if style is article ----
+%\begin{abstract}
+%The abstract
+%\end{abstract}
+\end{titlepage}
+
+\tableofcontents                          %Comment if use article style\newpage
+
+\chapter{Preface}
+\label{sec:preface}
+
+The \libarcclient\cite{libarcclient} library provides a lot of methods for implementing client functionality in graphical user interfaces as well as Web based interfaces. The library provides bindings for C++, Java and Python. This documents focuses on the Python binding and its use in implementing advanced graphical user interfaces. 
+
+Python is a dynamic scripting language which is easy to learn while providing advanced features for implementing larger applications. This documents describes the implementation of a standalone graphical user interface for ARC based on \python{wxPython}, \python{ArcGui}, and the integration of \libarcclient into the Lunarc Application Portal.
+
+This document describes how the \libarcclient library is used 
+
+%----------------------------------------------------------
+%----------------------------------------------------------
+\chapter{ArcGui standalone user interface}
+\label{sec:arcgui}
+%----------------------------------------------------------
+%----------------------------------------------------------
+
+The ArcGui application is a standalone graphical user interface for simple job submission and job control. The user interface uses the \python{wxPython} graphical user interface library, which is a Python binding for the \python{wxWidgets} library. The benefits of using \python{wxPython} is that the finished application can be run on all available platforms, such as Linux, Mac OS X and Microsoft Windows. In addition to being platform independent, \python{wxPython} also adapts the appearance of the user interface to the target platform, so that when the application is run on Windows it will look like a native Windows application. 
+
+The design of the ArcGui user interface is based on a tabbed window design. Currently there are tabs for a \textbf{Generic Job}, \textbf{Active Jobs}. The design of the application is flexible, so that it can be easily extended with additional functionality.
+
+The ArcGui application attempts to implement a fully non-blocking user interface, no operation will lock the user interface. This is especially important when dealing with Grid operations, that can take a while to process. 
+
+%----------------------------------------------------------
+\section{Job submission}
+%----------------------------------------------------------
+
+The current implementation of ArcGui only supports a generic job defined entirely by a job description, however the architecture of the application will allow easy extension of functionality. In the generic job tab a job description can be entered either as a XRSL or JSDL file and submitted directly. All parameters are controlled from the job description. Figure~\ref{fig:generic_job_tab} shows the generic job tab in the user interface.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=0.6\textwidth]{generic_job_tab.png}
+\caption{Generic job tab}\label{fig:generic_job_tab}
+\end{figure}		
+
+In the simple job tab a simple shell script based job can be submitted. Input and output files can be selected by using the buttons on the right side. Figure~\ref{fig:simple_job_tab} show the simple script job tab.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=0.6\textwidth]{simple_job_tab.png}
+\caption{Simple script job tab}\label{fig:simple_job_tab}
+\end{figure}		
+
+To enable a non-blocking user interface the actual job submission process is encapsulated in a special worker thread \textit{SubmitJobThread}. This thread is spawned when the \python{Submit} button is pressed. To communicate status updates in the user interface the thread sends events to the main thread. Each thread defines an event that is sent when it has finished; in addition to this, each thread also sends the \textit{UpdateProgressEvent} during the execution to send progress information messages to the main thread.
+
+The \textit{onSubmit()} method creates a \textit{ManagedJobDescription} based on the input in the user interface controls. It then passes the job description class to an instance of a \textit{SubmitJobThread} instance. The complete event method is shown in the following code.
+
+\begin{shaded}
+\begin{verbatim}
+def onSubmit(self, event): # wxGlade: ArcWindow.<event_handler>
+    """
+    Event handler: Submit a job.
+    """
+    
+    # Create job description
+    
+    job = ManagedJobDescription();
+    
+    job.JobName = str(self.jobNameText.GetValue())
+    job.TotalWallTime = arc.Period(str(self.jobWallTimeText.GetValue()),arc.PeriodMinutes)
+    job.Executable = "/bin/sh"
+    job.addArgument("run.sh")
+    job.addInputFile("run.sh")
+    job.Output = "stdout.txt"
+    job.Error = "stderr.txt"
+    job.TotalWallTime = arc.Period("5",arc.PeriodMinutes)
+    job.Print(True)
+    
+    # Create run-script
+    
+    jobScriptFile = open("run.sh", "w")
+    jobScriptFile.write(self.jobScriptText.GetValue())
+    jobScriptFile.close()
+    
+    # Start job submission thread
+    
+    worker = SubmitJobThread(self, self.__arcClient, job)
+    worker.start()
+    self.__progressTimer.Start(100)
+\end{verbatim}
+\end{shaded}
+
+The job submission thread takes an instance of the ArcClient instance and a job description instance. To enable sending of status events the \textit{updateProgress} property of the ArcClient class is assigned a class method of the thread, \textit{doProgress}, which sends an event to the main thread to update status information. Then \textit{run()} method then does brokering and submission and finally sends an event to indicate that processing has finished. 
+
+\begin{shaded}
+\begin{verbatim}
+class SubmitJobThread(threading.Thread):
+    """
+    Worker thread for submitting a job.
+    """
+    def __init__(self, parent, arcClient, job):
+        threading.Thread.__init__(self)
+        self.__parent = parent
+        self.__arcClient = arcClient
+        self.__job = job
+        self.__arcClient.updateProgress = self.doProgress
+        
+    def run(self):
+        self.__arcClient.debugLevel = arc.WARNING
+        self.__arcClient.findTargets()
+        self.__arcClient.filterTargets(self.__job)   
+        success = self.__arcClient.submit(self.__job)
+        evt = SubmitJobDoneEvent(EVT_KILL_JOBS_DONE_TYPE, -1, success)
+        wx.PostEvent(self.__parent, evt)
+        
+    def doProgress(self, message):
+        evt = UpdateProgressEvent(EVT_PROGRESS_UPDATE_TYPE, -1, message)
+        wx.PostEvent(self.__parent, evt)
+\end{verbatim}
+\end{shaded}
+
+%----------------------------------------------------------
+\section{Job control}
+%----------------------------------------------------------
+
+Active jobs are presented in the \textbf{Active Jobs} tab in an interactive table. Available actions are shown as buttons in the top of the tab. To invoke an action, jobs are selected by clicking in the left column. Multiple jobs can be selected by using modifier keys.
+
+When an action is invoked, the selected jobs in the table are collected in a \python{JobController} and the action is invoked on the job controller instance.
+
+Jobs in the table can be grouped by selecting the columns in topmost row. Figure~\ref{fig:job_control_tab} shows then job control table.
+
+\begin{figure}[htp]
+\centering
+\includegraphics[width=0.6\textwidth]{job_control_tab.png}
+\caption{Job control tab}\label{fig:job_control_tab}
+\end{figure}		
+
+
+%----------------------------------------------------------
+%----------------------------------------------------------
+\chapter{Application Portal Integration}
+\label{sec:portal}
+%----------------------------------------------------------
+%----------------------------------------------------------
+
+The Lunarc Application Portal is an ongoing development to provide a framework for developing portals for Grid resources. Existing versions of the portal also used ARC for job submission, job monitoring and job control. However, these versions mostly used command line tools and some classes from the \python{arclib} library. The aim of this project is to implement all the job handling routines using the newly developed \libarcclient instead of using the error prone parsing of command line output.
+
+%----------------------------------------------------------
+\section{Lunarc Application Portal}
+%----------------------------------------------------------
+
+The Lunarc Application Portal is a lightweight application portal for accessing Grid resources. The portal is implemented using WebWare for Python which is a Python based application server. The WebWare for Python handles takes care of servlets, session handling and concurrency. 
+
+The Lunarc Application portal adds a framework for implementing application specific portals using a plugin based approach. Developers of application plugins provide two classes a Job class (\python{CustomJob}) and a user interface class (\python{CustomJobPage}). Job submission, control and monitoring is handled by the portal framework.
+
+The portal implementation uses a file based structure to implement user configuration and storage of user files instead of a database backend. This leads to a portal that is relatively easy to setup and maintain. The file structure is described in table:
+
+\begin{table*}
+	\centering
+		\begin{tabular}{|l|l|l|}
+		\hline
+		\textbf{Directory} & \textbf{Description} & \textbf{example} \\
+		\hline
+		User directories & Storage of user configuration and job definitions & /var/spool/lap \\
+		\hline
+		Log files & Log files for portal and WebWare for Python & /var/log/lap \\
+		\hline
+		Application instance & WebWare application instance & /opt/lap \\
+		\hline
+		\end{tabular}
+	\caption{File structure of the Lunarc Application portal}
+	\label{tab:lap_file_structure}
+\end{table*}
+
+
+%----------------------------------------------------------
+\section{User authentication}
+%----------------------------------------------------------
+
+In the current version of the portal a user logs to the portal over SSL with his browser certificate. A login prompt is shown and the user logs in with a user name and a password. In the main user interface the user can upload a proxy certificate from the Session/Upload proxy... menu. To validate the portal the \python{arc.Credential} class is used from the \libarcclient library.
+
+\begin{shaded}
+\begin{verbatim}
+cred = arc.Credential(proxyLocation, "", "", "")
+
+period = cred.GetEndTime()-arc.Time()
+if period <= arc.Period():
+    [...]
+    self.writeln("Proxy has expired.")
+    [...]
+else:
+    [...]
+    self.writeln("Proxy is remaining = " + (period.tolongstring()), "Information")
+    [...]
+\end{verbatim}
+\end{shaded}
+
+Authentication information is stored in an \python{arc.UserConfig} instance in the \python{Grid.Clients.ArcClient} instance.
+
+%----------------------------------------------------------
+\section{\libarcclient integration}
+%----------------------------------------------------------
+
+To make it easier and more maintainable to integrate the Lunarc Application portal with \libarcclient a special client class, \python{Grid.Clients.ArcClient}, was implemented this class handles all interaction with the \libarcclient library as well as maintains job lists and user configuration information.
+
+An \python{ArcClient} intance is created upon user session creation and destroyed when the session is destroyed. WebWare has a special session store which stores session speicfic information during the sesssion lifetime. The session store is implemeted as a python dictionary and can be accessed by the methods \python{setValue}, \python{getValue}, \python{delValue} and \python{hasValue}. The session store is persistent during the session lifetime, that is if the portal service is shutdown, the session store is serialised to disk before shutdown and loaded again when the service is started again. The \python{ArcClient} instance is stored in the session store, but not serialised when the service is shutdown. The following code shows how an \python{ArcClient} instance is created if needed when a servlet is awakened.
+
+\begin{shaded}
+\begin{verbatim}
+def awake(self, trans):
+    ApplicationSecurePage.awake(self, trans)
+
+    # Instantiate a arc client instance if needed.
+          
+    if not self.session().hasValue("arc_client"):
+        user = Lap.Session.User(self.session().value('authenticated_user'))
+        userDir = user.getDir();
+        proxyFilename = os.path.join(userDir, "proxy.pem")
+        jobListFilename = os.path.join(userDir, "jobs.xml")
+        userConfigurationFilename = os.path.join(userDir, "client.xml")
+        self.session().setValue("arc_client", 
+            ArcClient(proxyFilename, 
+                jobListFilename, userConfigurationFilename)        
+\end{verbatim}
+\end{shaded}
+
+The \python{ArcClient} is described in detail in chapter \ref{sec:integration}.
+
+%----------------------------------------------------------
+\section{Job definitions}
+%----------------------------------------------------------
+
+The Lunarc Application Portal is based on a job definition concept. A job definition can best be described as a template for how a job for a specific application is submitted to a Grid resource. It contains a template for a run script and maintains the list of files needed to run the job. It is also responsible for creatin the job description for the Grid. 
+
+The main functionality of a job template is implemented in the \python{Lap.Job.LapBaseTask} class. This class is used by the portal to maintain input and output files for the job, parameter sweep functionality and job description creation. 
+
+A job definition can have a sweep size set, which defines the number of jobs that will be submitted with different parameters. A special task directory is setup for each parameter in the set and results are retrieved and stored the same directory. To use the parameter sweep functionality the user supplies input files with special keywords, which are then replaced by the portal with special values wich can be used to calculate the exact sweep parameters. The following code shows how an input file for NumPy is modified with sweep parameters:
+
+\begin{shaded}
+\begin{verbatim}
+#!/bin/env python
+
+from numpy import *
+
+sweepSize = %(sweepSize)d
+jobName = "%(name)s"
+id = %(id)d
+
+matrix = array([id, id])
+
+[...]
+\end{verbatim}
+\end{shaded}
+
+When a application plugin is developed a special class \python{CustomTask} is derived from \python{Lap.Job.LapBaseTask}, which is the base from which job definitions are instantiated. There are two important methods that must be implemented by a derived job definition class, \python{doCreateRunScript} and \python{doCreateJobDescription}. The first is responsible for creating the script which is executed on the Grid resources and the second class is used to create a \libarcclient \python{arc.JobDescription} instance which is then used by the portal framework when the job is submitted. The following code shows an example of a job description class, \python{CustomTask}
+
+\begin{shaded}
+\begin{verbatim}
+class CustomTask(Lap.Job.LapBaseTask):
+    def __init__(self):
+        Lap.Job.LapBaseTask.__init__(self)
+        
+        self.description = "NumPy"
+        self.taskEditPage = "CustomJobPage"
+
+        # Task specific attributes
+        
+        self.__mainFile = ""      
+        self.packages = []
+        self.extraFiles = []
+        
+    def doCreateRunScript(self, taskName, taskId):
+        """
+        Abstract routine responsible for returning a
+        run-script for the job.
+        """
+        return runScriptTemplate % (self.__mainFile)
+        
+    def doCreateJobDescription(self, taskName, taskId, taskDir):
+        """
+        Abstract routines responsible for returning a jobdescription for
+        the job.
+        """
+        
+        # Create a managed job description
+        
+        job = ManagedJobDescription();
+        job.JobName = str(taskName)
+        job.TotalWallTime = arc.Period(str(self.cpuTime),arc.PeriodMinutes)
+        job.Executable = "/bin/sh"
+        job.addArgument("run.sh")
+        
+        # Make sure we store the full paths of input files
+        
+        for inputFile in self.inputFiles.keys():
+            url = self.inputFiles[inputFile]
+            if url == "":
+                fullPath = os.path.join(taskDir, inputFile)
+                job.addInputFile(fullPath)
+            else:
+                job.addInputFile(inputFile, url)
+        
+        job.Output = "stdout.txt"
+        job.Error = "stderr.txt"
+        
+        return job    
+\end{verbatim}
+\end{shaded}
+
+%----------------------------------------------------------
+\section{Job management and submission}
+%----------------------------------------------------------
+
+An important part of the Lunarc Application Portal is the job management page (\python{ManageJobPage}). From this page the user manages the created job definitions. Job definitions can be deleted, edited and submitted. The user interface is centered around a dynamic table control, which make it easy to sort job definition as well as select multiple definitions. 
+
+The job management page is also responsible for initiating job submission. In this initial version job submission is done in a non-threaded way using and \python{ArcClient} instance and blocks page rendering until the job has been submitted. Information on the submitted job is stored in the, \filename{job.xml}, file which is stored in the user directory. The \libarcclient library maintains this file when it submits jobs. Part of the submit method of the job management page is shown in the following example:
+
+\begin{shaded}
+\begin{verbatim}
+def submitJob(self):
+    """Submit selected job(s) to the grid (action)."""
+    
+        [...]
+
+        for jobName in jobNameList:
+        
+            jobDir = os.path.join(userDir, "job_%s" % jobName)
+            
+            # Read the job task 
+            
+            taskFile = file(os.path.join(jobDir,"job.task"), "r")
+            task = pickle.load(taskFile)
+            taskFile.close()
+            
+            jobList = task.getJobList()
+            
+            # Do brokering
+            
+            self.__arcClient.debugLevel = arc.DEBUG
+            self.__arcClient.findTargets()
+
+            for job in jobList:
+                job.Print(True)
+                self.__arcClient.filterTargets(job)                 
+                submitted = self.__arcClient.submit(job)
+                if submitted:
+                    print "Job submitted succesfully."
+                else:
+                    print "Job submission failed."
+                    
+                    
+            [...]
+\end{verbatim}
+\end{shaded}
+
+In the final version of the portal the submission procedure will be threaded and the \libarcclient parts will be executed by a special submission thread. This will make submission of large parameter jobs much more efficient as well as preventing a blocking Web page. Job submission status will be reported and stored in the task parameter directories. To prevent threading issues status for the submission threads will be reported in separate files.
+
+%----------------------------------------------------------
+%----------------------------------------------------------
+\chapter{Middleware integration module}
+\label{sec:integration}
+%----------------------------------------------------------
+%----------------------------------------------------------
+
+To hide the complexity and make the integration of the \libarcclient library easier a special Python integration module, \python{Grid.Clients}, was implemented. The module contains the \python{ArcClient} class which implements the neccesary commands for integrating with ARC as well as more advanced features such as bulk job handling.
+
+%----------------------------------------------------------
+\section{Creating an ArcClient instance}
+%----------------------------------------------------------
+
+The \python{ArcClient} class communicates most of its configuration by a property based interface. That is directly assigning class variables as variables. This can seem like a bad programming practice, but instead of providing get and set methods for each property, Python provides a way of defining properties which behave as variables externally, but internally call get and set methods. The following example shows how this can be implemented in a Python class:
+
+\begin{shaded}
+\begin{verbatim}
+class ArcClient(object):
+	def __init__(self):
+		...
+		self.__debugLevel = arc.DEBUG
+		
+	def setDebugLevel(self, level):
+		self.__debugLevel = level
+        arc.Logger_getRootLogger().setThreshold(self.__debugLevel)
+        
+    def getDebugLevel(self):
+    	return self.__debugLevel
+	
+	...
+	
+	debugLevel = property(getDebugLevel, setDebugLevel)
+\end{verbatim}
+\end{shaded}
+
+In the previous example the debugLevel property is implemented through the \python{getDebugLevel} and \python{setDebugLevel}. The user of the instance can then assign the \python{debugLevel} property as a normal member variable.
+
+\begin{shaded}
+\begin{verbatim}
+arcClient.debugLevel = arc.WARNING
+\end{verbatim}
+\end{shaded}
+
+The property interface provide classes with a more direct and intuitive way of interacting with objects.
+
+The \python{ArcClient} class is instantiated by calling its constructor. The constructor does not have any parameters. Most configuration options are defined by properties. In the following example an \python{ArcClient} instance is created and locations for proxy, job list file, download directory and user configuration is set by assigning class properties.
+
+\begin{shaded}
+\begin{verbatim}
+arcClient = ArcClient()
+        
+uid = os.getuid()
+gid = os.getgid()
+        
+arcClient.proxyFilename = "/tmp/x509up_u%d" % uid
+arcClient.jobListFilename = os.path.abspath("./jobs.xml")
+arcClient.userConfigFilename = os.path.abspath("./client.xml")
+arcClient.downloadDir = os.path.abspath(".")
+\end{verbatim}
+\end{shaded}
+
+%----------------------------------------------------------
+\section{Creating a managed job description}
+%----------------------------------------------------------
+
+The new \libarcclient library contains a special class, \python{JobDescription}, which implements a Grid job description. The class is implemented as generic job description and can be used to generate job descriptions for both ARC 0.6.x resources as well as future ARC 1.x based resources. The Python binding for this class is quite expressive and requires a lot of extra steps to create a simple description. To simplify the job creation process a special \python{ManagedJobDescription} class has been implemented. This class is derived from \python{arc.JobDescription} and extends this class with methods for adding input and output files as well as adding runtime environment definitions. To illustrate the expressiveness of the \libarcclient \python{JobDescription} class the implementation of the \python{addInputFile()} method is shown in the following code excerpt:
+
+\begin{shaded}
+\begin{verbatim}
+def addInputFile(self, name, url="", keepData = True, isExecutable = False, 	
+ 	downloadToCache = False, threads = -1):
+    """
+    Add an input file, name, to the job description.
+    """
+    inputFile = arc.FileType()
+    inputFile.Name = os.path.basename(name)
+    inputFile.KeepData = False
+    inputFile.IsExecutable = False
+    inputFile.DownloadToCache = False
+    inputFileSource = arc.SourceType()
+    if url=="":
+        fullPath = os.path.abspath(name)
+        urlRepr = "file://"+fullPath
+        inputFileSource.URI = arc.URL(urlRepr)
+    else:
+        inputFileSource.URI = arc.URL(url)
+    inputFileSource.Threads = threads
+    inputFile.Source.append(inputFileSource)
+    self.File.append(inputFile)	
+\end{verbatim}
+\end{shaded}
+
+By using the \python{ManagedJobDecription} class a job description can be described by the following lines of code:
+
+\begin{shaded}
+\begin{verbatim}
+job = Grid.Clients.ManagedJobDescription()
+job.Executable = "/bin/sh"
+job.addArgument("run.sh")
+job.addInputFile("run.sh")
+job.Output = "stdout.txt"
+job.Error = "stderr.txt"
+job.addOutputFile("result.txt")
+job.TotalWallTime = arc.Period("5",arc.PeriodMinutes)
+\end{verbatim}
+\end{shaded}
+
+%----------------------------------------------------------
+\section{Job submission}
+%----------------------------------------------------------
+
+To handle job submission in a efficient way the \python{ArcClient} separates target selection, brokering and submission into separate methods, \python{findTargets}, \python{filterTargets} and \python{submit}. This makes it possible to reuse the selected targets and eliminate the need to query the information system for each job submission. To find suitable targets the \python{findTargets()} method uses the \libarcclient \python{TargetGenerator} class. The found targets are then stored in the \python{self.targets} member varible, so that it can be reused when targets are filtered. The following code shows the \python{ArcClient} ]python{findTargets()} implementation.
+
+\begin{shaded}
+\begin{verbatim}
+def findTargets(self):
+    """
+    Find possible targets by querying information system.
+    """
+    self.targets = None
+    self.__targetGenerator.GetTargets(0, 1);
+    self.targets = self.__targetGenerator.ModifyFoundTargets()
+\end{verbatim}
+\end{shaded}
+
+The \python{findTargets()} method only queries the information system for all possible targets. To select a target for submission, job brokering or filtering must be done. This is implemented in \python{filterTargets()} method in the \python{ArcClient} class. This method selects a broker and uses this broker to select suitable submission targets. The implementation of this class is shown in the following code:
+
+\begin{shaded}
+\begin{verbatim}
+def filterTargets(self, job):
+    """
+    Return a filtered list of suitable targets based on the
+    RandomBroker component.
+    """
+    chosenBroker = self.loadBroker()
+    chosenBroker.PreFilterTargets(self.targets, job)
+            
+    target = chosenBroker.GetBestTarget()
+    while not target==None:
+         target = chosenBroker.GetBestTarget()
+         if target!=None:
+               self.filteredTargets.append(target)
+            
+    return self.filteredTargets
+\end{verbatim}
+\end{shaded}
+
+A typical job submission with \python{ArcClient} is shown in the following code:
+
+\begin{shaded}
+\begin{verbatim}
+# Brokering
+
+arcClient.findTargets()
+arcClient.filterTargets()
+
+# Submission (reusing target information)
+
+for job in jobs:
+    if arcClient.submit(job):
+        print "Job submission succeeded."
+    else:
+        print "Job submission failed."
+\end{verbatim}
+\end{shaded}
+
+%----------------------------------------------------------
+\section{Job status query}
+%----------------------------------------------------------
+
+The \python{JobController} class has methods for querying job status for the jobs it manages. However, to make it more managable in Python the \python{ArcClient} class converts the mapped C++ \python{JobInformation} instances to a dictionary keyed on the job id. The following code shows this conversion in the \python{updateStatus()} method.
+
+\begin{shaded}
+\begin{verbatim}
+def updateStatus(self):
+
+    [...]
+           
+    for controller in jobControllers:
+        controller.GetJobInformation()
+        jobStore = controller.GetJobs()
+        for job in jobStore:
+            jobId = job.JobID.str()
+            if self.jobDict.has_key(jobId):
+                try:
+                    self.jobDict[jobId]["State"] = job.State
+                    self.jobDict[jobId]["Name"] = job.Name
+                    self.jobDict[jobId]["Type"] = job.Type
+                    self.jobDict[jobId]["JobDescription"] = job.JobDescription
+                    [...]
+\end{verbatim}
+\end{shaded}
+
+When the \python{updateStatus()} method hase been called job information can be retrieved by querying the Python dictionary.
+
+\begin{shaded}
+\begin{verbatim}
+for jobId in arcClient.jobDict.keys():
+		if arcClient.jobDict[jobId].has_key("Name")
+		    print arcClient.jobDirc["Name"], arcClient["State"]
+\end{verbatim}
+\end{shaded}
+
+A special method, \python{sortKeysBy()}, has been added to return a list of keys sorted by a specific field in the job information structure.
+
+%----------------------------------------------------------
+\section{Job control}
+%----------------------------------------------------------
+
+The \python{ArcClient} module implements the methods \python{get()}, \python{kill()} and \python{clean()} for controlling active Grid jobs. All methods are implemented using the \python{JobController} class for invoking operations on lists of jobs. When any of these operations are invoked the job list is reloaded. Job status information must also be reloaded after these operations. 
+
+Downloading of jobs will be done to the directory specified by the \python{downloadDir} property of the \python{ArcClient} class.
+
+The following code shows an example of how these methods can be used to control active Grid jobs.
+
+\begin{shaded}
+\begin{verbatim}
+arcClient.submit(job)
+arcClient.updateStatus()
+
+[...]
+
+arcClient.get(arcClient.jobDict.keys())
+
+[...]
+
+arcClient.kill(["gsiftp://...", "gsiftp://..."])
+arcClient.clean(["gsiftp://..."])
+\end{verbatim}
+\end{shaded}
+
+
+%\bibliography{nordugrid}
+
+\begin{thebibliography}{99}
+\bibitem{libarcclient} libarcclient -- A Client Library for ARC, M.~Ellert, B.~Mohn, I.~M\'{a}rton, G.~R\H{o}czei, NORDUGRID-TECH-20, \url{http://www.nordugrid.org/documents/client_technical.pdf}
+
+\end{thebibliography}
+\end{document}
+
