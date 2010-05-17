@@ -1,0 +1,46 @@
+ARC Job Submission Tool installation instructions
+-------------------------------------------------
+
+ARC Job Submission Tool (arcjobtool)  is a prototype user interface client for 
+the ARC1 libarcclient library. The client is implemented in Python using the 
+wxPython user interface toolkit.
+
+Requirements
+------------
+
+GTK
+wxWidgets (wxGTK)
+wxPython
+ARC1 client library of a recent bleeding edge version :)
+ARC1 python binding for the client library
+
+Installation
+------------
+
+Untar the tarball in a suitable location:
+
+$ tar xvzf arcjobtool-x.y.tar.gz
+
+Add the $ARCJOBTOOL_LOCATION/bin to your search path.
+
+Usage
+-----
+
+If everything was setup correctly the user interface can be started by typing:
+
+$ arcjobtool
+
+The client will create configuration files in ~/.arc if they don't exist or
+use the same files as the other arc-tools (client.conf and jobs.xml). A sample
+client.conf configuration is shown below:
+
+~/.arc/arcjobtool.conf:
+
+[common]
+defaultservices=index:ARC0:ldap://index1.swegrid.se:2135/Mds-Vo-name=SweGrid,o=grid 
+timeout=50
+proxypath=/tmp/myproxy
+keypath=/home/xxxx/.globus/userkey.pem
+certificatepath=/home/xxxx/.globus/usercert.pem
+cacertificatesdirectory=/etc/grid-security/certificates
+
