@@ -1,0 +1,26 @@
+ARC Job Submission Tool - README
+--------------------------------
+
+This is the first official release of ARC Job Submission Tool
+(arcjobtool) together with the ARC release.
+
+The release should be considered experimental and need a lot
+more testing before it is to be used in a production environment.
+
+To add support for more application, the arcjobtool implements a 
+plugin architecture for adding support for different runtime-environments 
+and grid-applications. The documentation for this is not completed, but 
+have a look in the plugins-directory to see some examples of how plugins can
+be implemented in arcjobtool.
+
+The release of arcjobtool also includes an initial attempt of creating
+a GUI for requesting grid-certificates. I would like to have feedback
+if this is a useful utility and if the implementation done in a
+secure manner. The tool is implemented in approximately the same way
+as the grid-cert-request script. 
+
+Information on how to install the application can be found in the
+INSTALL document.
+
+Jonas Lindemann
+Lunarc, Lund University
