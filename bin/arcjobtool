@@ -1,0 +1,36 @@
+#!/bin/bash
+
+echo "Starting ARC Job Submission Tool..."
+
+export ARC_LOCATION=$(cd $(dirname $(which arcsub))/..; pwd)
+
+export SYSARCH=$(uname -m)
+export PYTHON_VERSION_STRING=$(python -V 2>&1 )
+export PYTHON_VERSION=${PYTHON_VERSION_STRING#* }
+export PYTHON_MAIN_VERSION=${PYTHON_VERSION%.*}
+if [ $SYSARCH = "x86_64" ]; then
+	export LIBARCH=lib64
+else
+	export LIBARCH=lib
+fi
+
+if [ -d $(dirname $0)/../lib/arcjobtool ]; then
+	echo "Running from source directory..."
+	export ARCJOBTOOL_LIB=$(cd $(dirname $0)/../lib; pwd)
+	export ARCJOBTOOL_BIN=$(cd $(dirname $0); pwd)
+	export ARCJOBTOOL_SHARE=$(cd $(dirname $0)/../share/arcjobtool; pwd)
+	export PYTHONPATH=$PYTHONPATH:$ARCJOBTOOL_LIB
+	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARC_LOCATION/$LIBARCH:$ARC_LOCATION/lib:$ARC_LOCATION/lib/arc:$ARC_LOCATION/$LIBARCH/python$PYTHON_MAIN_VERSION/site-packages:$GLOBUS_LOCATION/lib
+else
+        echo "Running from system directory..."
+        if [ -d /usr/lib/python$PYTHON_MAIN_VERSION/site-packages ]; then
+            export ARCJOBTOOL_LIB=/usr/lib/python$PYTHON_MAIN_VERSION/site-packages 
+        else
+            export ARCJOBTOOL_LIB=/usr/lib64/python$PYTHON_MAIN_VERSION/site-packages
+        fi
+	export ARCJOBTOOL_BIN=$(cd $(dirname $0); pwd)
+	export ARCJOBTOOL_SHARE=/usr/share/arcjobtool
+
+	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ARC_LOCATION/$LIBARCH:$ARC_LOCATION/lib:$ARC_LOCATION/lib/arc:$ARC_LOCATION/$LIBARCH/python$PYTHON_MAIN_VERSION/site-packages:$GLOBUS_LOCATION/lib
+fi
+python -c "import arcjobtool.ArcJobToolApp"
